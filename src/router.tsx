@@ -1,5 +1,5 @@
 import { createBrowserRouter } from 'react-router-dom'
-import { LoginPage, RegisterPage } from '@/pages/auth'
+import { CallbackPage, LoginPage, RegisterPage } from '@/pages/auth'
 import { HomePage } from './pages/HomePage'
 
 export const router = createBrowserRouter([
@@ -14,5 +14,9 @@ export const router = createBrowserRouter([
   {
     path: '/register',
     element: <RegisterPage />,
+  },
+  {
+    path: '/auth/callback',
+    element: <CallbackPage />,
   },
 ])
