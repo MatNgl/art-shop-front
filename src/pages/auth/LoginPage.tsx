@@ -9,9 +9,11 @@ import Iridescence from '@/components/backgrounds/Iridescence'
 import { FormInput, FormPassword } from '@/components/forms'
 import { Button } from '@/components/ui/button'
 import { loginSchema, type LoginFormData } from '@/schemas'
+import { useAuth } from '@/hooks/useAuth'
 
 export function LoginPage() {
   const navigate = useNavigate()
+  const { login } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
 
   const {
@@ -27,19 +29,16 @@ export function LoginPage() {
     setIsLoading(true)
 
     try {
-      console.log('Login data:', data)
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      await login(data)
 
       toast.success('Connexion réussie', {
         description: 'Bienvenue sur Art Shop',
       })
 
-      setTimeout(() => {
-        navigate('/')
-      }, 1000)
-    } catch {
+      navigate('/')
+    } catch (error) {
       toast.error('Erreur de connexion', {
-        description: 'Email ou mot de passe incorrect.',
+        description: error instanceof Error ? error.message : 'Email ou mot de passe incorrect.',
       })
     } finally {
       setIsLoading(false)
@@ -47,7 +46,8 @@ export function LoginPage() {
   }
 
   const handleGoogleAuth = () => {
-    window.location.href = 'http://localhost:3000/auth/google'
+    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
+    window.location.href = `${apiUrl}/auth/google`
   }
 
   return (

@@ -9,9 +9,11 @@ import Iridescence from '@/components/backgrounds/Iridescence'
 import { FormInput, FormPassword, PasswordStrength } from '@/components/forms'
 import { Button } from '@/components/ui/button'
 import { registerSchema, type RegisterFormData } from '@/schemas'
+import { useAuth } from '@/hooks/useAuth'
 
 export function RegisterPage() {
   const navigate = useNavigate()
+  const { register: registerUser } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
 
   const {
@@ -30,19 +32,16 @@ export function RegisterPage() {
     setIsLoading(true)
 
     try {
-      console.log('Register data:', data)
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      await registerUser(data)
 
       toast.success('Compte créé avec succès', {
-        description: 'Vous allez être redirigé...',
+        description: 'Vous êtes maintenant connecté !',
       })
 
-      setTimeout(() => {
-        navigate('/login')
-      }, 1000)
-    } catch {
+      navigate('/')
+    } catch (error) {
       toast.error('Erreur lors de la création du compte', {
-        description: 'Veuillez réessayer.',
+        description: error instanceof Error ? error.message : 'Veuillez réessayer.',
       })
     } finally {
       setIsLoading(false)
@@ -50,7 +49,8 @@ export function RegisterPage() {
   }
 
   const handleGoogleAuth = () => {
-    window.location.href = 'http://localhost:3000/auth/google'
+    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
+    window.location.href = `${apiUrl}/auth/google`
   }
 
   return (
