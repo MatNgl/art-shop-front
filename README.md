@@ -1,73 +1,176 @@
-# React + TypeScript + Vite
+# Art Shop — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Interface utilisateur de la plateforme de vente en ligne dédiée à un artiste unique.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Stack technique
 
-## React Compiler
+**Framework** : React 19 + TypeScript
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+**Build** : Vite
 
-## Expanding the ESLint configuration
+**Styles** : Tailwind CSS
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+**Composants UI** : shadcn/ui (Radix UI)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+**Formulaires** : React Hook Form + Zod
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+**Notifications** : Sonner
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+**Icônes** : Lucide React
+
+**Animations** : Framer Motion + OGL (backgrounds)
+
+**Routing** : React Router DOM
+
+---
+
+## Prérequis
+
+- Node.js >= 18.x
+- npm >= 9.x
+
+---
+
+## Installation
+```bash
+# Cloner le repository
+git clone <url-du-repo>
+cd art-shop-front
+
+# Installer les dépendances
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Lancement
+```bash
+# Mode développement (avec hot-reload)
+npm run dev
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Build production
+npm run build
+
+# Prévisualiser le build
+npm run preview
 ```
+
+**URL locale** : http://localhost:5173
+
+---
+
+## Commandes utiles
+```bash
+# Lancer le serveur de développement
+npm run dev
+
+# Compiler pour la production
+npm run build
+
+# Vérifier le code avec ESLint
+npm run lint
+
+# Prévisualiser le build de production
+npm run preview
+```
+
+---
+
+## Ajouter un composant shadcn/ui
+```bash
+# Syntaxe
+npx shadcn@latest add <nom-du-composant>
+
+# Exemples
+npx shadcn@latest add button
+npx shadcn@latest add input
+npx shadcn@latest add card
+npx shadcn@latest add dialog
+npx shadcn@latest add dropdown-menu
+npx shadcn@latest add select
+npx shadcn@latest add checkbox
+npx shadcn@latest add toast
+```
+
+Liste des composants disponibles : https://ui.shadcn.com/docs/components
+
+---
+
+## Structure du projet
+```
+src/
+├── components/
+│   ├── ui/              # Composants shadcn/ui
+│   ├── backgrounds/     # Fonds animés (Iridescence)
+│   ├── forms/           # Champs de formulaire
+│   ├── feedback/        # Toast, Loader
+│   ├── navigation/      # Menus, Breadcrumb
+│   └── gallery/         # Affichage des œuvres
+├── pages/
+│   └── auth/            # Login, Register
+├── schemas/             # Validations Zod
+├── services/            # Appels API
+├── lib/
+│   └── utils.ts         # Utilitaires (cn, etc.)
+└── styles/
+    └── globals.css
+```
+
+---
+
+## Conventions
+
+**Nommage des composants** : PascalCase (`FormInput.tsx`)
+
+**Nommage des utils** : camelCase (`formatPrice.ts`)
+
+**Langue** : Français (labels, messages, erreurs)
+
+**Icônes** : Lucide React uniquement
+
+**Emojis** : Aucun dans l'interface
+
+---
+
+## Charte graphique
+
+**Thème** : Clair uniquement
+
+**Typographie** : À définir
+
+**Palette** : À définir (neutre pour l'instant)
+
+**Style des formulaires** : Glassmorphism (transparent, blur)
+
+**Backgrounds** :
+- Login : Iridescence bleu/violet `color={[0.3, 0.2, 0.5]}`
+- Register : Iridescence rosé `color={[1, 0.7, 0.7]}`
+
+---
+
+## Ressources
+
+- [Documentation React](https://react.dev)
+- [Documentation Vite](https://vite.dev)
+- [Documentation Tailwind CSS](https://tailwindcss.com/docs)
+- [Composants shadcn/ui](https://ui.shadcn.com)
+- [Icônes Lucide](https://lucide.dev/icons)
+- [Icônes Lucide Animated](https://lucide-animated.com)
+- [Inspirations ReactBits](https://reactbits.dev)
+- [Inspirations UIverse](https://uiverse.io)
+
+---
+
+## Lien avec le backend
+
+**API Backend** : http://localhost:3000
+
+**Documentation Swagger** : http://localhost:3000/api
+
+---
+
+## Licence
+
+Ce projet est sous licence MIT.
