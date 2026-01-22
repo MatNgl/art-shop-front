@@ -111,7 +111,7 @@ export function LoginPage() {
             <Button
               type="submit"
               size="lg"
-              className="w-full mt-6 bg-gray-900 text-white hover:bg-gray-800"
+              className="w-full mt-6 bg-gray-900 text-white hover:bg-gray-800 cursor-pointer"
               isLoading={isLoading}
               disabled={!isValid}
             >
@@ -131,7 +131,7 @@ export function LoginPage() {
             type="button"
             variant="outline"
             size="lg"
-            className="w-full border-gray-300 text-gray-700 hover:bg-gray-50"
+            className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 cursor-pointer"
             onClick={handleGoogleAuth}
           >
             <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
