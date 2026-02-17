@@ -1,10 +1,19 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-html, body, #root {
-  height: 100%;
-  overflow: hidden;
+/* Reset pour permettre le scroll sur la home */
+html {
+  scroll-behavior: smooth;
 }
+
+body {
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -124,4 +133,39 @@ html, body, #root {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* ============================================
+   CUSTOM SCROLLBAR
+   ============================================ */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: oklch(0.8 0 0);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.7 0 0);
+}
+
+/* ============================================
+   TYPOGRAPHY
+   ============================================ */
+
+/* Titres avec tracking large pour effet artistique */
+.heading-artistic {
+  @apply font-light tracking-wide;
+}
+
+/* Texte avec espacement pour lisibilité */
+.text-readable {
+  @apply leading-relaxed;
 }

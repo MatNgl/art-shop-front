@@ -1,3 +1,3 @@
-export * from './CallbackPage'
-export * from './LoginPage'
-export * from './RegisterPage'
+export * from "./CallbackPage";
+export * from "./LoginPage";
+export * from "./RegisterPage";

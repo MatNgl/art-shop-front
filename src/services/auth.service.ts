@@ -1,25 +1,27 @@
-import { get, post } from './api'
+import { get, post } from "./api";
 import type {
   AuthResponse,
   LoginPayload,
   RegisterPayload,
   User,
-} from '@/types'
+} from "@/types";
 
 /**
  * Connexion utilisateur
  * POST /auth/login
  */
 export async function login(payload: LoginPayload): Promise<AuthResponse> {
-  return post<AuthResponse>('/auth/login', payload)
+  return post<AuthResponse>("/auth/login", payload);
 }
 
 /**
  * Inscription utilisateur
  * POST /auth/register
  */
-export async function register(payload: RegisterPayload): Promise<AuthResponse> {
-  return post<AuthResponse>('/auth/register', payload)
+export async function register(
+  payload: RegisterPayload,
+): Promise<AuthResponse> {
+  return post<AuthResponse>("/auth/register", payload);
 }
 
 /**
@@ -27,7 +29,7 @@ export async function register(payload: RegisterPayload): Promise<AuthResponse> 
  * GET /auth/me
  */
 export async function getMe(): Promise<User> {
-  return get<User>('/auth/me')
+  return get<User>("/auth/me");
 }
 
 /**
@@ -35,5 +37,5 @@ export async function getMe(): Promise<User> {
  * POST /auth/logout
  */
 export async function logout(): Promise<{ message: string }> {
-  return post<{ message: string }>('/auth/logout', {})
+  return post<{ message: string }>("/auth/logout", {});
 }

@@ -1,1 +1,1 @@
-export { default as Iridescence } from './Iridescence'
+export { default as Iridescence } from "./Iridescence";
