@@ -7,21 +7,34 @@ export const ProductStatus = {
   PUBLISHED: 'PUBLISHED',
   ARCHIVED: 'ARCHIVED',
 } as const;
-export type ProductStatus = typeof ProductStatus[keyof typeof ProductStatus];
+export type ProductStatus = (typeof ProductStatus)[keyof typeof ProductStatus];
 
 export const ProductVariantStatus = {
   AVAILABLE: 'AVAILABLE',
   OUT_OF_STOCK: 'OUT_OF_STOCK',
   DISCONTINUED: 'DISCONTINUED',
 } as const;
-export type ProductVariantStatus = typeof ProductVariantStatus[keyof typeof ProductVariantStatus];
+export type ProductVariantStatus =
+  (typeof ProductVariantStatus)[keyof typeof ProductVariantStatus];
 
 export const ProductImageStatus = {
   ACTIVE: 'ACTIVE',
   INACTIVE: 'INACTIVE',
 } as const;
-export type ProductImageStatus = typeof ProductImageStatus[keyof typeof ProductImageStatus];
+export type ProductImageStatus =
+  (typeof ProductImageStatus)[keyof typeof ProductImageStatus];
 
+/**
+ * Enum distinct pour les images de variantes.
+ * Mêmes valeurs que ProductImageStatus mais type séparé
+ * pour refléter l'entité backend ProductVariantImageStatus.
+ */
+export const ProductVariantImageStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+} as const;
+export type ProductVariantImageStatus =
+  (typeof ProductVariantImageStatus)[keyof typeof ProductVariantImageStatus];
 
 // ============================================
 // FORMAT
@@ -54,33 +67,18 @@ export interface Material {
 // TAG
 // ============================================
 
+/**
+ * Le TagResponseDto backend ne contient pas `name`,
+ * mais le service retourne l'entité Tag directement (sans mapper).
+ * `name` est donc présent dans la réponse réelle.
+ * À corriger côté backend en V2 (mapper vers DTO).
+ */
 export interface Tag {
   id: string;
   name: string;
   slug: string;
   createdAt: string;
   updatedAt?: string;
-}
-
-// ============================================
-// CATEGORY
-// ============================================
-
-export interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  position: number;
-  subcategoriesCount?: number;
-  productsCount?: number;
-  createdBy: string;
-  createdAt: string;
-  modifiedBy?: string;
-  updatedAt: string;
-}
-
-export interface CategoryWithSubcategories extends Category {
-  subcategories: Subcategory[];
 }
 
 // ============================================
@@ -106,6 +104,31 @@ export interface SubcategoryWithCategory extends Subcategory {
     name: string;
     slug: string;
   };
+}
+
+// ============================================
+// CATEGORY
+// ============================================
+
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  position: number;
+  subcategoriesCount?: number;
+  productsCount?: number;
+  createdBy: string;
+  createdAt: string;
+  modifiedBy?: string;
+  updatedAt: string;
+}
+
+/**
+ * Retourné par GET /categories?includeSubcategories=true
+ * Correspond au CategoryWithSubcategoriesResponseDto backend.
+ */
+export interface CategoryWithSubcategories extends Category {
+  subcategories: Subcategory[];
 }
 
 // ============================================
@@ -135,6 +158,25 @@ export interface ProductImage {
 }
 
 // ============================================
+// PRODUCT VARIANT IMAGE
+// ============================================
+
+export interface ProductVariantImage {
+  id: string;
+  variantId: string;
+  publicId: string;
+  url: string;
+  urls: ImageUrls;
+  altText?: string;
+  position: number;
+  /** Utilise ProductVariantImageStatus, distinct de ProductImageStatus */
+  status: ProductVariantImageStatus;
+  isPrimary: boolean;
+  createdAt: string;
+  createdById: string;
+}
+
+// ============================================
 // PRODUCT VARIANT
 // ============================================
 
@@ -148,20 +190,6 @@ export interface ProductVariant {
   status: ProductVariantStatus;
   createdAt: string;
   updatedAt: string;
-}
-
-export interface ProductVariantImage {
-  id: string;
-  variantId: string;
-  publicId: string;
-  url: string;
-  urls: ImageUrls;
-  altText?: string;
-  position: number;
-  status: ProductImageStatus;
-  isPrimary: boolean;
-  createdAt: string;
-  createdById: string;
 }
 
 // ============================================
@@ -179,7 +207,8 @@ export interface Product {
   seoTitle?: string;
   seoDescription?: string;
   tags: Tag[];
-  images?: ProductImage[];
+    categories?: Category[];
+  subcategories?: Subcategory[];
   createdAt: string;
   updatedAt: string;
 }
@@ -196,8 +225,8 @@ export interface ProductWithDetails extends Product {
 export interface ProductListItem extends Product {
   /** Image principale */
   primaryImage?: ProductImage;
-  /** Prix minimum parmi les variantes */
+  /** Prix minimum parmi les variantes disponibles */
   minPrice?: number;
-  /** Prix maximum parmi les variantes */
+  /** Prix maximum parmi les variantes disponibles */
   maxPrice?: number;
 }
