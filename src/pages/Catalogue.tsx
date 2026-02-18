@@ -3,6 +3,8 @@ import { useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { ProductCard, ProductCardSkeleton } from '@/components/catalog/ProductCard'
 import { getCategoriesWithSubcategories } from '@/services/categories.service'
+import { Breadcrumb } from '@/components/navigation/Breadcrumb'
+import { useCatalogueBreadcrumb } from '@/hooks/useBreadcrumb'
 import {
   getPublishedProducts,
   getProductImages,
@@ -44,7 +46,11 @@ export default function Catalogue() {
 
   const activeCategory = searchParams.get('categorie')
   const activeSubcategory = searchParams.get('sous-categorie')
-
+  const breadcrumbItems = useCatalogueBreadcrumb({
+    categories,
+    activeCategory,
+    activeSubcategory,
+  })
   // ── Chargement initial ──────────────────────────
   useEffect(() => {
     let cancelled = false
@@ -179,6 +185,8 @@ export default function Catalogue() {
   return (
     <main className="min-h-screen bg-white">
       <section className="px-6 pb-8 pt-16 md:px-12 lg:px-20">
+         {!loading && <Breadcrumb items={breadcrumbItems} className="mb-4" />}
+
         <h1 className="text-4xl font-semibold tracking-tight text-gray-900 md:text-5xl">
           Galerie
         </h1>

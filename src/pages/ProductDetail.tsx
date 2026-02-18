@@ -5,6 +5,8 @@ import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react'
 import { VariantSelector } from '@/components/catalog/VariantSelector'
 import { QuantitySelector } from '@/components/catalog/QuantitySelector'
 import { ProductCard, ProductCardSkeleton } from '@/components/catalog/ProductCard'
+import { Breadcrumb } from '@/components/navigation/Breadcrumb'
+import { useProductDetailBreadcrumb } from '@/hooks/useBreadcrumb'
 import { toast } from 'sonner'
 import {
   getProductBySlug,
@@ -64,6 +66,7 @@ export default function ProductDetail() {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([])
   const [relatedImages, setRelatedImages] = useState<Record<string, ProductImage>>({})
 
+  const breadcrumbItems = useProductDetailBreadcrumb({ product })
   useEffect(() => {
     if (!slug) return
 
@@ -181,6 +184,7 @@ export default function ProductDetail() {
 
       {/* ── Contenu principal ── */}
       <div className="mx-auto max-w-5xl px-6 py-8 lg:px-12">
+        <Breadcrumb items={breadcrumbItems} className="mb-6" />
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
 
           {/* ── Colonne image ── */}
