@@ -435,7 +435,7 @@ function CategoriesSection() {
             : categories.map((category) => (
                 <motion.div key={category.id} variants={fadeInUp}>
                   <Link
-                    to={`/galerie?categorie=${category.slug}`}
+                    to={`/categorie/${category.slug}`}
                     className={cn(
                       'group block relative aspect-square rounded-2xl overflow-hidden',
                       'bg-gray-100'

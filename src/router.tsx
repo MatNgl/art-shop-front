@@ -4,6 +4,9 @@ import { HomePage } from '@/pages/HomePage'
 import { LoginPage, RegisterPage, CallbackPage } from '@/pages/auth'
 import Catalogue from '@/pages/Catalogue'
 import ProductDetail from '@/pages/ProductDetail'
+import CategoryPage from '@/pages/CategoryPage'
+import NotFoundPage from '@/pages/NotFoundPage'
+
 
 export const router = createBrowserRouter([
   // ============================================
@@ -23,6 +26,10 @@ export const router = createBrowserRouter([
       {
         path: '/collections',
         element: <div className="pt-20 p-8">Page Collections (à créer)</div>,
+      },
+      {
+        path: '/categorie/:slug',
+        element: <CategoryPage />,
       },
       {
         path: '/artiste',
@@ -55,6 +62,10 @@ export const router = createBrowserRouter([
       {
         path: '/confidentialite',
         element: <div className="pt-20 p-8">Politique de confidentialité (à créer)</div>,
+      },
+      {
+        path: '*',
+        element: <NotFoundPage />,
       },
     ],
   },

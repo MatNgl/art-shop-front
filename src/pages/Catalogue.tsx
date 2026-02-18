@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { ProductCard, ProductCardSkeleton } from '@/components/catalog/ProductCard'
 import { getCategoriesWithSubcategories } from '@/services/categories.service'
@@ -43,6 +43,7 @@ export default function Catalogue() {
   const [minPrices, setMinPrices] = useState<MinPriceMap>({})
   const [categories, setCategories] = useState<CategoryWithSubcategories[]>([])
   const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
 
   const activeCategory = searchParams.get('categorie')
   const activeSubcategory = searchParams.get('sous-categorie')
@@ -213,7 +214,7 @@ export default function Catalogue() {
             {categories.map((cat) => (
               <button
                 key={cat.id}
-                onClick={() => setSearchParams({ categorie: cat.slug })}
+                onClick={() => navigate(`/categorie/${cat.slug}`)}
                 className={`whitespace-nowrap text-sm font-medium transition-colors ${
                   activeCategory === cat.slug
                     ? 'border-b-2 border-gray-900 pb-1 text-gray-900'

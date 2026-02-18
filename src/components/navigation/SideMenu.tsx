@@ -364,12 +364,12 @@ export function SideMenu({
   )
 
   const handleCategoryNavigation = useCallback(
-    (categorySlug: string) => {
-      closeMenu()
-      setTimeout(() => navigate(`/galerie?categorie=${categorySlug}`), 200)
-    },
-    [closeMenu, navigate]
-  )
+  (categorySlug: string) => {
+    closeMenu()
+    setTimeout(() => navigate(`/categorie/${categorySlug}`), 200)
+  },
+  [closeMenu, navigate]
+)
 
   const handleFormatNavigation = useCallback(
     (formatId: string) => {
@@ -586,7 +586,7 @@ export function SideMenu({
                                           onClick={() => {
                                             closeMenu()
                                             setTimeout(() => {
-                                              navigate(`/galerie?sous-categorie=${sub.slug}`)
+                                              navigate(`/categorie/${category.slug}?sous-categorie=${sub.slug}`)
                                             }, 200)
                                           }}
                                           className="
