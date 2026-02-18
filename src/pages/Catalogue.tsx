@@ -1,49 +1,104 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { toast } from 'sonner'
 import { ProductCard, ProductCardSkeleton } from '@/components/catalog/ProductCard'
 import { getCategoriesWithSubcategories } from '@/services/categories.service'
-import { getPublishedProducts, getProductImages } from '@/services/products.service'
-import type { Product, ProductImage, CategoryWithSubcategories } from '@/types'
+import {
+  getPublishedProducts,
+  getProductImages,
+  getProductVariants,
+} from '@/services/products.service'
+import type {
+  Product,
+  ProductImage,
+  ProductVariant,
+  CategoryWithSubcategories,
+} from '@/types'
 
-// Map productId → image principale
+// ── Types locaux ────────────────────────────────
+
 type PrimaryImageMap = Record<string, ProductImage>
+type MinPriceMap = Record<string, number>
+
+// Délai minimum d'affichage du skeleton (ms)
+const MIN_LOADING_MS = 600
+
+// ── Helper ──────────────────────────────────────
+
+function computeMinPrice(variants: ProductVariant[]): number | null {
+  const available = variants.filter((v) => v.status === 'AVAILABLE')
+  if (available.length === 0) return null
+  return Math.min(...available.map((v) => Number(v.price)))
+}
+
+// ── Page Catalogue ──────────────────────────────
 
 export default function Catalogue() {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const [products, setProducts] = useState<Product[]>([])
   const [primaryImages, setPrimaryImages] = useState<PrimaryImageMap>({})
+  const [minPrices, setMinPrices] = useState<MinPriceMap>({})
   const [categories, setCategories] = useState<CategoryWithSubcategories[]>([])
   const [loading, setLoading] = useState(true)
 
   const activeCategory = searchParams.get('categorie')
   const activeSubcategory = searchParams.get('sous-categorie')
 
-  // ── Chargement initial ────────────────────────────────
+  // ── Chargement initial ──────────────────────────
   useEffect(() => {
+    let cancelled = false
+
     async function load(): Promise<void> {
+      const start = Date.now()
+
       try {
         const [fetchedProducts, fetchedCategories] = await Promise.all([
           getPublishedProducts(),
-          getCategoriesWithSubcategories().catch(() => []),
+          getCategoriesWithSubcategories().catch(() => {
+            if (!cancelled) {
+              toast.error('Impossible de charger les catégories', {
+                description: 'Le filtrage peut être temporairement indisponible.',
+              })
+            }
+            return [] as CategoryWithSubcategories[]
+          }),
         ])
+
+        if (cancelled) return
 
         setProducts(fetchedProducts)
         setCategories(fetchedCategories)
 
-        // Chargement des images en parallèle (non bloquant)
-        void loadPrimaryImages(fetchedProducts)
+        // Chargement parallèle images + prix (non bloquant pour l'affichage)
+        void loadPrimaryImages(fetchedProducts, cancelled)
+        void loadMinPrices(fetchedProducts, cancelled)
       } catch {
-        setProducts([])
+        if (!cancelled) {
+          setProducts([])
+          toast.error('Impossible de charger les œuvres', {
+            description: 'Vérifiez votre connexion et réessayez.',
+          })
+        }
       } finally {
-        setLoading(false)
+        const elapsed = Date.now() - start
+        const remaining = Math.max(0, MIN_LOADING_MS - elapsed)
+
+        setTimeout(() => {
+          if (!cancelled) setLoading(false)
+        }, remaining)
       }
     }
 
     void load()
+    return () => { cancelled = true }
   }, [])
 
-  async function loadPrimaryImages(prods: Product[]): Promise<void> {
+  // ── Chargement images principales ───────────────
+  async function loadPrimaryImages(
+    prods: Product[],
+    cancelled: boolean,
+  ): Promise<void> {
     const results = await Promise.allSettled(
       prods.map((p) =>
         getProductImages(p.id).then((imgs) => ({
@@ -53,56 +108,89 @@ export default function Catalogue() {
       ),
     )
 
+    if (cancelled) return
+
     const map: PrimaryImageMap = {}
+    let failCount = 0
+
     results.forEach((r) => {
       if (r.status === 'fulfilled' && r.value.primary) {
         map[r.value.productId] = r.value.primary
+      } else if (r.status === 'rejected') {
+        failCount++
       }
     })
+
     setPrimaryImages(map)
+
+    if (failCount > 0 && failCount === prods.length) {
+      toast.error('Impossible de charger les images', {
+        description: 'Les visuels peuvent ne pas s\'afficher correctement.',
+      })
+    }
   }
 
-  // ── Filtrage client par catégorie ou sous-catégorie ──────
-  // Fonctionne grâce aux relations `categories` et `subcategories`
-  // désormais incluses dans la réponse de GET /products/published.
+  // ── Chargement prix minimum ─────────────────────
+  async function loadMinPrices(
+    prods: Product[],
+    cancelled: boolean,
+  ): Promise<void> {
+    const results = await Promise.allSettled(
+      prods.map((p) =>
+        getProductVariants(p.id).then((variants) => ({
+          productId: p.id,
+          minPrice: computeMinPrice(variants),
+        })),
+      ),
+    )
+
+    if (cancelled) return
+
+    const map: MinPriceMap = {}
+    results.forEach((r) => {
+      if (r.status === 'fulfilled' && r.value.minPrice !== null) {
+        map[r.value.productId] = r.value.minPrice
+      }
+    })
+
+    setMinPrices(map)
+  }
+
+  // ── Filtrage client ─────────────────────────────
   const filteredProducts = useMemo(() => {
     if (!activeCategory && !activeSubcategory) return products
 
     return products.filter((product) => {
       if (activeSubcategory) {
-        return (
-          product.subcategories?.some((sub) => sub.slug === activeSubcategory) ??
-          false
-        )
+        return product.subcategories?.some(
+          (sub) => sub.slug === activeSubcategory,
+        ) ?? false
       }
       if (activeCategory) {
-        return (
-          product.categories?.some((cat) => cat.slug === activeCategory) ??
-          false
-        )
+        return product.categories?.some(
+          (cat) => cat.slug === activeCategory,
+        ) ?? false
       }
       return true
     })
   }, [products, activeCategory, activeSubcategory])
 
-  // ── Rendu ─────────────────────────────────────────────
+  // ── Rendu ──────────────────────────────────────
   return (
     <main className="min-h-screen bg-white">
-      {/* ── Header ── */}
       <section className="px-6 pb-8 pt-16 md:px-12 lg:px-20">
         <h1 className="text-4xl font-semibold tracking-tight text-gray-900 md:text-5xl">
           Galerie
         </h1>
         <p className="mt-2 text-sm text-gray-400">
           {loading
-            ? '…'
+            ? '\u2026'
             : `${filteredProducts.length} œuvre${filteredProducts.length > 1 ? 's' : ''}`}
         </p>
       </section>
 
-      {/* ── Filtres catégories ── */}
       {!loading && categories.length > 0 && (
-        <nav className="sticky top-20 z-10 border-b border-gray-100 bg-white/90 backdrop-blur-sm px-6 md:px-12 lg:px-20">
+        <nav className="sticky top-20 z-10 border-b border-gray-100 bg-white/90 px-6 backdrop-blur-sm md:px-12 lg:px-20">
           <div className="flex gap-6 overflow-x-auto py-3 scrollbar-none">
             <button
               onClick={() => setSearchParams({})}
@@ -131,18 +219,18 @@ export default function Catalogue() {
         </nav>
       )}
 
-        {/* ── Grille produits ── */}
-        <section className="px-6 py-10 md:px-12 lg:px-20">
-          <div className="grid grid-cols-3 gap-x-4 gap-y-10 sm:grid-cols-4 lg:grid-cols-5">
-            {loading
-              ? Array.from({ length: 8 }).map((_, i) => (
-                  <ProductCardSkeleton key={i} />
-                ))
-              : filteredProducts.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
+      <section className="px-6 py-10 md:px-12 lg:px-20">
+        <div className="grid grid-cols-3 gap-x-4 gap-y-10 sm:grid-cols-4 lg:grid-cols-5">
+          {loading
+            ? Array.from({ length: 8 }).map((_, i) => (
+                <ProductCardSkeleton key={i} />
+              ))
+            : filteredProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
                   primaryImage={primaryImages[product.id]}
+                  minPrice={minPrices[product.id]}
                 />
               ))}
         </div>

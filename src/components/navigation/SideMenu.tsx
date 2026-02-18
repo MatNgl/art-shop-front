@@ -36,10 +36,8 @@ export function SideMenu({
   className = '',
 }: SideMenuProps) {
   const [open, setOpen] = useState(false)
-  
   const [categories, setCategories] = useState<CategoryWithSubcategories[]>([])
   const [formats, setFormats] = useState<Format[]>([])
-  
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({})
   const [isLoading, setIsLoading] = useState(false)
   const [textLines, setTextLines] = useState<string[]>(['Menu', 'Fermer'])
@@ -78,10 +76,8 @@ export function SideMenu({
           getCategoriesWithSubcategories().catch(() => []),
           getFormats().catch(() => [])
         ])
-        
         setCategories(Array.isArray(categoriesData) ? categoriesData : [])
         setFormats(Array.isArray(formatsData) ? formatsData : [])
-        
       } catch (error) {
         console.error('Erreur lors du chargement des données:', error)
         setCategories([])
@@ -116,10 +112,10 @@ export function SideMenu({
       const textInner = textInnerRef.current
 
       if (plusH && plusV && icon && textInner) {
-         gsap.set(plusH, { transformOrigin: '50% 50%', rotate: 0 })
-         gsap.set(plusV, { transformOrigin: '50% 50%', rotate: 90 })
-         gsap.set(icon, { rotate: 0, transformOrigin: '50% 50%' })
-         gsap.set(textInner, { yPercent: 0 })
+        gsap.set(plusH, { transformOrigin: '50% 50%', rotate: 0 })
+        gsap.set(plusV, { transformOrigin: '50% 50%', rotate: 90 })
+        gsap.set(icon, { rotate: 0, transformOrigin: '50% 50%' })
+        gsap.set(textInner, { yPercent: 0 })
       }
 
       if (toggleBtnRef.current) {
@@ -201,7 +197,6 @@ export function SideMenu({
 
     if (itemEls.length) {
       const itemsStart = panelInsertTime + panelDuration * 0.15
-
       tl.to(
         itemEls,
         {
@@ -237,7 +232,6 @@ export function SideMenu({
   const playClose = useCallback(() => {
     openTlRef.current?.kill()
     openTlRef.current = null
-
     setExpandedSections({})
 
     const panel = panelRef.current
@@ -364,9 +358,7 @@ export function SideMenu({
   const handleNavigation = useCallback(
     (href: string) => {
       closeMenu()
-      setTimeout(() => {
-        navigate(href)
-      }, 200)
+      setTimeout(() => navigate(href), 200)
     },
     [closeMenu, navigate]
   )
@@ -374,9 +366,7 @@ export function SideMenu({
   const handleCategoryNavigation = useCallback(
     (categorySlug: string) => {
       closeMenu()
-      setTimeout(() => {
-        navigate(`/galerie?categorie=${categorySlug}`)
-      }, 200)
+      setTimeout(() => navigate(`/galerie?categorie=${categorySlug}`), 200)
     },
     [closeMenu, navigate]
   )
@@ -384,9 +374,7 @@ export function SideMenu({
   const handleFormatNavigation = useCallback(
     (formatId: string) => {
       closeMenu()
-      setTimeout(() => {
-        navigate(`/galerie?format=${formatId}`)
-      }, 200)
+      setTimeout(() => navigate(`/galerie?format=${formatId}`), 200)
     },
     [closeMenu, navigate]
   )
@@ -411,9 +399,7 @@ export function SideMenu({
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && open) {
-        closeMenu()
-      }
+      if (e.key === 'Escape' && open) closeMenu()
     }
     document.addEventListener('keydown', handleEscape)
     return () => document.removeEventListener('keydown', handleEscape)
@@ -423,7 +409,7 @@ export function SideMenu({
     <>
       <div
         className={`
-          fixed inset-0 bg-black/30 backdrop-blur-sm z-[998]
+          fixed inset-0 bg-black/30 backdrop-blur-sm z-998
           transition-opacity duration-300
           ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}
         `}
@@ -434,7 +420,7 @@ export function SideMenu({
       <div
         ref={preLayersRef}
         className={`
-          fixed top-0 bottom-0 z-[999] pointer-events-none
+          fixed top-0 bottom-0 z-999 pointer-events-none
           ${position === 'left' ? 'left-0' : 'right-0'}
         `}
         style={{ width: 'clamp(280px, 40vw, 420px)' }}
@@ -452,7 +438,7 @@ export function SideMenu({
       <aside
         ref={panelRef}
         className={`
-          fixed top-0 bottom-0 z-[1000]
+          fixed top-0 bottom-0 z-1000
           bg-white flex flex-col
           overflow-hidden shadow-2xl
           ${position === 'left' ? 'left-0' : 'right-0'}
@@ -463,10 +449,25 @@ export function SideMenu({
         } as React.CSSProperties}
         aria-hidden={!open}
       >
+        {/* ── Header du panel avec bouton Fermer ── */}
         <div className="h-20 flex items-center justify-between px-8 border-b border-gray-100">
           <span className="text-xs font-semibold text-gray-400 uppercase tracking-[0.2em]">
             Navigation
           </span>
+          <button
+            onClick={closeMenu}
+            className="
+              flex items-center gap-1.5
+              text-xs font-medium text-gray-400
+              hover:text-gray-900 transition-colors duration-200
+              bg-transparent border-0 cursor-pointer
+              uppercase tracking-[0.12em]
+            "
+            aria-label="Fermer le menu"
+          >
+            Fermer
+            <span className="text-[10px]">✕</span>
+          </button>
         </div>
 
         <div className="flex-1 overflow-y-auto px-8 py-6">
@@ -477,190 +478,189 @@ export function SideMenu({
               const isExpanded = expandedSections[item.href]
 
               return (
-  <li
-    key={item.href}
-    className="sm-panel-itemWrap relative overflow-visible leading-none"
-  >
-    <div className="flex items-center group">
-      <button
-        onClick={() => {
-          if (hasSubmenu) {
-            toggleSection(item.href)
-          } else {
-            handleNavigation(item.href)
-          }
-        }}
-        className={`
-          sm-panel-item
-          relative text-left flex-1
-          text-[clamp(1.8rem,4vw,2.5rem)] font-semibold
-          leading-none tracking-[-0.02em] uppercase
-          py-3 pr-12
-          cursor-pointer
-          transition-colors duration-150
-          bg-transparent border-0
-          flex items-center gap-3
-          ${isActive
-            ? 'text-[var(--sm-accent)]'
-            : 'text-gray-900 hover:text-[var(--sm-accent)]'
-          }
-        `}
-        data-index={idx + 1}
-      >
-        <span className="sm-panel-itemLabel inline-block origin-bottom-left will-change-transform">
-          {item.label}
-        </span>
-        {hasSubmenu && (
-          <ChevronDown
-            size={20}
-            strokeWidth={2}
-            className={`
-              transition-transform duration-300 text-gray-400
-              ${isExpanded ? 'rotate-180' : ''}
-            `}
-          />
-        )}
-      </button>
-      {hasSubmenu && (
-        <button
-          onClick={() => handleNavigation(item.href)}
-          className="
-            text-xs text-gray-400 hover:text-[var(--sm-accent)]
-            transition-all px-2 py-2
-            opacity-0 group-hover:opacity-100
-            bg-transparent border-0 cursor-pointer
-          "
-        >
-          Tout →
-        </button>
-      )}
-    </div>
-
-    {hasSubmenu && (
-      <div
-        className={`
-          overflow-hidden transition-all duration-400 ease-out
-          ${isExpanded ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'}
-        `}
-      >
-        <div className="pl-4 pb-4 pt-2 space-y-6 border-l-2 border-gray-100 ml-1">
-
-          {/* ── CATÉGORIES ── */}
-          <div>
-            <button
-              onClick={() => handleNavigation('/galerie')}
-              className="
-                text-[10px] font-bold uppercase tracking-[0.15em]
-                text-[var(--sm-accent)] hover:opacity-70
-                mb-3 flex items-center gap-1
-                transition-opacity bg-transparent border-0 cursor-pointer
-              "
-            >
-              Catégories →
-            </button>
-
-            {isLoading ? (
-              <div className="text-sm text-gray-300 animate-pulse">Chargement...</div>
-            ) : categories.length > 0 ? (
-              <div className="space-y-3">
-                {categories.map((category) => (
-                  <div key={category.id}>
-                    {/* Catégorie principale */}
+                <li
+                  key={item.href}
+                  className="sm-panel-itemWrap relative overflow-visible leading-none"
+                >
+                  <div className="flex items-center group">
                     <button
-                      onClick={() => handleCategoryNavigation(category.slug)}
-                      className="
-                        text-base font-semibold text-gray-700
-                        hover:text-gray-900 transition-all duration-150
-                        bg-transparent border-0 cursor-pointer
-                        py-1 w-full text-left hover:translate-x-1
-                      "
+                      onClick={() => {
+                        if (hasSubmenu) {
+                          toggleSection(item.href)
+                        } else {
+                          handleNavigation(item.href)
+                        }
+                      }}
+                      className={`
+                        sm-panel-item
+                        relative text-left flex-1
+                        text-[clamp(1.8rem,4vw,2.5rem)] font-semibold
+                        leading-none tracking-[-0.02em] uppercase
+                        py-3 pr-12
+                        cursor-pointer
+                        transition-colors duration-150
+                        bg-transparent border-0
+                        flex items-center gap-3
+                        ${isActive
+                          ? 'text-(--sm-accent)'
+                          : 'text-gray-900 hover:text-(--sm-accent)'
+                        }
+                      `}
+                      data-index={idx + 1}
                     >
-                      {category.name}
+                      <span className="sm-panel-itemLabel inline-block origin-bottom-left will-change-transform">
+                        {item.label}
+                      </span>
+                      {hasSubmenu && (
+                        <ChevronDown
+                          size={20}
+                          strokeWidth={2}
+                          className={`
+                            transition-transform duration-300 text-gray-400
+                            ${isExpanded ? 'rotate-180' : ''}
+                          `}
+                        />
+                      )}
                     </button>
-
-                    {/* Sous-catégories */}
-                    {category.subcategories.length > 0 && (
-                      <div className="pl-3 mt-1 space-y-0.5 border-l border-gray-100">
-                        {category.subcategories.map((sub) => (
-                          <button
-                            key={sub.id}
-                            onClick={() => {
-                              closeMenu()
-                              setTimeout(() => {
-                                navigate(`/galerie?sous-categorie=${sub.slug}`)
-                              }, 200)
-                            }}
-                            className="
-                              text-sm font-normal text-gray-400
-                              hover:text-gray-700 transition-all duration-150
-                              bg-transparent border-0 cursor-pointer
-                              py-1 w-full text-left hover:translate-x-1
-                            "
-                          >
-                            {sub.name}
-                          </button>
-                        ))}
-                      </div>
+                    {hasSubmenu && (
+                      <button
+                        onClick={() => handleNavigation(item.href)}
+                        className="
+                          text-xs text-gray-400 hover:text-(--sm-accent)
+                          transition-all px-2 py-2
+                          opacity-0 group-hover:opacity-100
+                          bg-transparent border-0 cursor-pointer
+                        "
+                      >
+                        Tout →
+                      </button>
                     )}
                   </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-gray-400 italic m-0">Aucune catégorie</p>
-            )}
-          </div>
 
-          {/* ── FORMATS ── */}
-          <div>
-            <button
-              onClick={() => handleNavigation('/galerie?view=formats')}
-              className="
-                text-[10px] font-bold uppercase tracking-[0.15em]
-                text-[var(--sm-accent)] hover:opacity-70
-                mb-3 flex items-center gap-1
-                transition-opacity bg-transparent border-0 cursor-pointer
-              "
-            >
-              Formats →
-            </button>
+                  {hasSubmenu && (
+                    <div
+                      className={`
+                        overflow-hidden transition-all duration-400 ease-out
+                        ${isExpanded ? 'max-h-800px opacity-100' : 'max-h-0 opacity-0'}
+                      `}
+                    >
+                      <div className="pl-4 pb-4 pt-2 space-y-6 border-l-2 border-gray-100 ml-1">
 
-            {isLoading ? (
-              <div className="text-sm text-gray-300 animate-pulse">Chargement...</div>
-            ) : formats.length > 0 ? (
-              <div className="space-y-1">
-                {formats.map((format) => (
-                  <button
-                    key={format.id}
-                    onClick={() => handleFormatNavigation(format.id)}
-                    className="
-                      text-base font-medium text-gray-600
-                      hover:text-gray-900 transition-all duration-150
-                      bg-transparent border-0 cursor-pointer
-                      py-1.5 flex items-center gap-2 w-full text-left hover:translate-x-1
-                    "
-                  >
-                    <span>{format.name}</span>
-                    {format.widthMm > 0 && format.heightMm > 0 && (
-                      <span className="text-xs text-gray-400 font-normal ml-auto">
-                        {format.widthMm}×{format.heightMm}mm
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-gray-400 italic m-0">Aucun format</p>
-            )}
-          </div>
+                        {/* ── CATÉGORIES ── */}
+                        <div>
+                          <button
+                            onClick={() => handleNavigation('/galerie')}
+                            className="
+                              text-[10px] font-bold uppercase tracking-[0.15em]
+                              text-(--sm-accent) hover:opacity-70
+                              mb-3 flex items-center gap-1
+                              transition-opacity bg-transparent border-0 cursor-pointer
+                            "
+                          >
+                            Catégories →
+                          </button>
 
-        </div>
-      </div>
-    )}
-  </li>
-)
-})}
+                          {isLoading ? (
+                            <div className="text-sm text-gray-300 animate-pulse">Chargement...</div>
+                          ) : categories.length > 0 ? (
+                            <div className="space-y-3">
+                              {categories.map((category) => (
+                                <div key={category.id}>
+                                  <button
+                                    onClick={() => handleCategoryNavigation(category.slug)}
+                                    className="
+                                      text-base font-semibold text-gray-700
+                                      hover:text-gray-900 transition-all duration-150
+                                      bg-transparent border-0 cursor-pointer
+                                      py-1 w-full text-left hover:translate-x-1
+                                    "
+                                  >
+                                    {category.name}
+                                  </button>
+
+                                  {category.subcategories.length > 0 && (
+                                    <div className="pl-3 mt-1 space-y-0.5 border-l border-gray-100">
+                                      {category.subcategories.map((sub) => (
+                                        <button
+                                          key={sub.id}
+                                          onClick={() => {
+                                            closeMenu()
+                                            setTimeout(() => {
+                                              navigate(`/galerie?sous-categorie=${sub.slug}`)
+                                            }, 200)
+                                          }}
+                                          className="
+                                            text-sm font-normal text-gray-400
+                                            hover:text-gray-700 transition-all duration-150
+                                            bg-transparent border-0 cursor-pointer
+                                            py-1 w-full text-left hover:translate-x-1
+                                          "
+                                        >
+                                          {sub.name}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-gray-400 italic m-0">Aucune catégorie</p>
+                          )}
+                        </div>
+
+                        {/* ── FORMATS ── */}
+                        <div>
+                          <button
+                            onClick={() => handleNavigation('/galerie?view=formats')}
+                            className="
+                              text-[10px] font-bold uppercase tracking-[0.15em]
+                              text-(--sm-accent) hover:opacity-70
+                              mb-3 flex items-center gap-1
+                              transition-opacity bg-transparent border-0 cursor-pointer
+                            "
+                          >
+                            Formats →
+                          </button>
+
+                          {isLoading ? (
+                            <div className="text-sm text-gray-300 animate-pulse">Chargement...</div>
+                          ) : formats.length > 0 ? (
+                            <div className="space-y-1">
+                              {formats.map((format) => (
+                                <button
+                                  key={format.id}
+                                  onClick={() => handleFormatNavigation(format.id)}
+                                  className="
+                                    text-base font-medium text-gray-600
+                                    hover:text-gray-900 transition-all duration-150
+                                    bg-transparent border-0 cursor-pointer
+                                    py-1.5 flex items-center gap-2 w-full text-left hover:translate-x-1
+                                  "
+                                >
+                                  <span>{format.name}</span>
+                                  {format.widthMm > 0 && format.heightMm > 0 && (
+                                    <span className="text-xs text-gray-400 font-normal ml-auto">
+                                      {format.widthMm}×{format.heightMm}mm
+                                    </span>
+                                  )}
+                                </button>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-gray-400 italic m-0">Aucun format</p>
+                          )}
+                        </div>
+
+                      </div>
+                    </div>
+                  )}
+                </li>
+              )
+            })}
           </ul>
         </div>
+
         <div className="px-8 py-4 border-t border-gray-100">
           <p className="text-xs text-gray-400 tracking-wide m-0">
             © {new Date().getFullYear()} Art Shop
@@ -675,10 +675,10 @@ export function SideMenu({
       <button
         ref={toggleBtnRef}
         className={`
-          sm-toggle relative inline-flex items-center gap-[0.5rem]
+          sm-toggle relative inline-flex items-center gap-2
           bg-transparent border-0 cursor-pointer
           font-medium text-sm leading-none
-          overflow-visible z-[1002]
+          overflow-visible z-1002
           ${className}
         `}
         aria-label={open ? 'Fermer le menu' : 'Ouvrir le menu'}
@@ -698,15 +698,15 @@ export function SideMenu({
 
         <span
           ref={iconRef}
-          className="relative w-[14px] h-[14px] shrink-0 inline-flex items-center justify-center will-change-transform"
+          className="relative w-3.5 h-3.5 shrink-0 inline-flex items-center justify-center will-change-transform"
         >
           <span
             ref={plusHRef}
-            className="absolute left-1/2 top-1/2 w-full h-[2px] bg-current rounded-sm -translate-x-1/2 -translate-y-1/2 will-change-transform"
+            className="absolute left-1/2 top-1/2 w-full h-0.5 bg-current rounded-sm -translate-x-1/2 -translate-y-1/2 will-change-transform"
           />
           <span
             ref={plusVRef}
-            className="absolute left-1/2 top-1/2 w-full h-[2px] bg-current rounded-sm -translate-x-1/2 -translate-y-1/2 will-change-transform"
+            className="absolute left-1/2 top-1/2 w-full h-0.5 bg-current rounded-sm -translate-x-1/2 -translate-y-1/2 will-change-transform"
           />
         </span>
       </button>

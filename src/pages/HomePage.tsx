@@ -2,12 +2,21 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, type Variants } from 'framer-motion'
 import { ArrowRight, ChevronDown } from 'lucide-react'
+import { toast } from 'sonner'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { buttonVariants } from '@/components/ui/button'
 import Iridescence from '@/components/backgrounds/Iridescence'
+import { ProductCard } from '@/components/catalog/ProductCard'
 import { cn } from '@/lib/utils'
-import type { Product, CategoryWithSubcategories } from '@/types'
+import {
+  getFeaturedProducts,
+  getPublishedProducts,
+  getProductImages,
+  getProductVariants,
+} from '@/services/products.service'
+import { getCategoriesWithSubcategories } from '@/services/categories.service'
+import type { Product, ProductImage, CategoryWithSubcategories, ProductVariant } from '@/types'
 
 // ============================================
 // ANIMATIONS
@@ -32,37 +41,16 @@ const staggerContainer: Variants = {
     },
   },
 }
+
 // ============================================
-// DONNÉES MOCK (à remplacer par les appels API)
+// HELPERS
 // ============================================
 
-const mockFeaturedProducts: Partial<Product>[] = [
-  {
-    id: '1',
-    name: 'Coucher de soleil sur Tokyo',
-    slug: 'coucher-de-soleil-tokyo',
-    shortDescription: 'Une œuvre capturant la beauté éphémère d\'un soir japonais',
-  },
-  {
-    id: '2',
-    name: 'Métamorphose urbaine',
-    slug: 'metamorphose-urbaine',
-    shortDescription: 'L\'architecture moderne rencontre la nature sauvage',
-  },
-  {
-    id: '3',
-    name: 'Silence bleu',
-    slug: 'silence-bleu',
-    shortDescription: 'Une exploration des profondeurs océaniques',
-  },
-]
-
-const mockCategories: Partial<CategoryWithSubcategories>[] = [
-  { id: '1', name: 'Illustrations', slug: 'illustrations', subcategories: [] },
-  { id: '2', name: 'Photographies', slug: 'photographies', subcategories: [] },
-  { id: '3', name: 'Art numérique', slug: 'art-numerique', subcategories: [] },
-  { id: '4', name: 'Éditions limitées', slug: 'editions-limitees', subcategories: [] },
-]
+function getMinPrice(variants: ProductVariant[]): number | null {
+  const available = variants.filter((v) => v.status === 'AVAILABLE')
+  if (available.length === 0) return null
+  return Math.min(...available.map((v) => Number(v.price)))
+}
 
 // ============================================
 // COMPOSANTS DE SECTION
@@ -77,13 +65,9 @@ function HeroSection() {
 
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Iridescence */}
       <Iridescence color={[0.3, 0.3, 0.4]} speed={0.8} mouseReact={true} />
+      <div className="absolute inset-0 bg-linear-to-b from-black/20 via-transparent to-black/40" />
 
-      {/* Overlay gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40" />
-
-      {/* Contenu */}
       <motion.div
         initial="hidden"
         animate="visible"
@@ -138,7 +122,6 @@ function HeroSection() {
         </motion.div>
       </motion.div>
 
-      {/* Indicateur de scroll */}
       <motion.button
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -170,19 +153,16 @@ function ArtistSection() {
           variants={staggerContainer}
           className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center"
         >
-          {/* Image de l'artiste */}
           <motion.div
             variants={fadeInUp}
-            className="relative aspect-[4/5] bg-gray-100 rounded-2xl overflow-hidden"
+            className="relative aspect-4/5 bg-gray-100 rounded-2xl overflow-hidden"
           >
-            {/* Placeholder - à remplacer par une vraie image */}
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300" />
+            <div className="absolute inset-0 bg-linear-to-br from-gray-200 to-gray-300" />
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-gray-400 text-sm">Photo de l'artiste</span>
             </div>
           </motion.div>
 
-          {/* Texte */}
           <div>
             <motion.p
               variants={fadeInUp}
@@ -236,14 +216,87 @@ function ArtistSection() {
   )
 }
 
-/** Section œuvres en avant */
+/** Section œuvres en avant — branchée sur l'API */
 function FeaturedSection() {
-  const [products] = useState(mockFeaturedProducts)
+  const [products, setProducts] = useState<Product[]>([])
+  const [images, setImages] = useState<Record<string, ProductImage>>({})
+  const [prices, setPrices] = useState<Record<string, number>>({})
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function load(): Promise<void> {
+      try {
+        // Tente d'abord les produits featured, sinon fallback sur published
+        let fetched = await getFeaturedProducts().catch(() => [])
+
+        if (fetched.length === 0) {
+          const all = await getPublishedProducts().catch(() => [])
+          fetched = all.slice(0, 3)
+        } else {
+          fetched = fetched.slice(0, 3)
+        }
+
+        if (cancelled) return
+        setProducts(fetched)
+
+        // Chargement parallèle images + prix
+        const [imgResults, priceResults] = await Promise.all([
+          Promise.allSettled(
+            fetched.map((p) =>
+              getProductImages(p.id).then((imgs) => ({
+                productId: p.id,
+                primary: imgs.find((i) => i.isPrimary) ?? imgs[0] ?? null,
+              })),
+            ),
+          ),
+          Promise.allSettled(
+            fetched.map((p) =>
+              getProductVariants(p.id).then((variants) => ({
+                productId: p.id,
+                minPrice: getMinPrice(variants),
+              })),
+            ),
+          ),
+        ])
+
+        if (cancelled) return
+
+        const imgMap: Record<string, ProductImage> = {}
+        imgResults.forEach((r) => {
+          if (r.status === 'fulfilled' && r.value.primary) {
+            imgMap[r.value.productId] = r.value.primary
+          }
+        })
+        setImages(imgMap)
+
+        const priceMap: Record<string, number> = {}
+        priceResults.forEach((r) => {
+          if (r.status === 'fulfilled' && r.value.minPrice !== null) {
+            priceMap[r.value.productId] = r.value.minPrice
+          }
+        })
+        setPrices(priceMap)
+      } catch {
+        if (!cancelled) {
+          toast.error('Impossible de charger les œuvres en vedette')
+        }
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    void load()
+    return () => { cancelled = true }
+  }, [])
+
+  // Ne rien afficher si aucun produit après chargement
+  if (!loading && products.length === 0) return null
 
   return (
     <section className="py-20 lg:py-32 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <motion.div
           initial="hidden"
           whileInView="visible"
@@ -265,7 +318,6 @@ function FeaturedSection() {
           </motion.h2>
         </motion.div>
 
-        {/* Grille des produits */}
         <motion.div
           initial="hidden"
           whileInView="visible"
@@ -273,49 +325,27 @@ function FeaturedSection() {
           variants={staggerContainer}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
         >
-          {products.map((product) => (
-            <motion.article
-              key={product.id}
-              variants={fadeInUp}
-              className="group"
-            >
-              <Link to={`/oeuvre/${product.slug}`} className="block">
-                {/* Image */}
-                <div className="relative aspect-[4/5] bg-gray-200 rounded-xl overflow-hidden mb-4">
-                  {/* Placeholder - à remplacer par ProductImage */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-gray-300 to-gray-400" />
-
-                  {/* Overlay au hover */}
-                  <div className={cn(
-                    'absolute inset-0 bg-black/0 group-hover:bg-black/20',
-                    'transition-all duration-300'
-                  )} />
-
-                  {/* Bouton voir */}
-                  <div className={cn(
-                    'absolute inset-0 flex items-center justify-center',
-                    'opacity-0 group-hover:opacity-100',
-                    'transition-opacity duration-300'
-                  )}>
-                    <span className="px-6 py-2 bg-white rounded-full text-sm font-medium">
-                      Voir l'œuvre
-                    </span>
+          {loading
+            ? Array.from({ length: 3 }).map((_, i) => (
+                <motion.div key={i} variants={fadeInUp}>
+                  <div className="animate-pulse">
+                    <div className="aspect-4/5 rounded-xl bg-gray-200 mb-4" />
+                    <div className="h-5 w-3/4 rounded bg-gray-200 mb-2" />
+                    <div className="h-4 w-full rounded bg-gray-200" />
                   </div>
-                </div>
-
-                {/* Infos */}
-                <h3 className="text-lg font-medium text-gray-900 group-hover:text-gray-600 transition-colors">
-                  {product.name}
-                </h3>
-                <p className="text-sm text-gray-500 mt-1">
-                  {product.shortDescription}
-                </p>
-              </Link>
-            </motion.article>
-          ))}
+                </motion.div>
+              ))
+            : products.map((product) => (
+                <motion.div key={product.id} variants={fadeInUp}>
+                  <ProductCard
+                    product={product}
+                    primaryImage={images[product.id]}
+                    minPrice={prices[product.id]}
+                  />
+                </motion.div>
+              ))}
         </motion.div>
 
-        {/* CTA */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -339,14 +369,35 @@ function FeaturedSection() {
   )
 }
 
-/** Section catégories */
+/** Section catégories — branchée sur l'API */
 function CategoriesSection() {
-  const [categories] = useState(mockCategories)
+  const [categories, setCategories] = useState<CategoryWithSubcategories[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function load(): Promise<void> {
+      try {
+        const fetched = await getCategoriesWithSubcategories()
+        if (!cancelled) setCategories(fetched)
+      } catch {
+        // Silencieux — la section disparaît simplement
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    void load()
+    return () => { cancelled = true }
+  }, [])
+
+  // Ne rien afficher si aucune catégorie
+  if (!loading && categories.length === 0) return null
 
   return (
     <section className="py-20 lg:py-32 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <motion.div
           initial="hidden"
           whileInView="visible"
@@ -368,7 +419,6 @@ function CategoriesSection() {
           </motion.h2>
         </motion.div>
 
-        {/* Grille des catégories */}
         <motion.div
           initial="hidden"
           whileInView="visible"
@@ -376,38 +426,44 @@ function CategoriesSection() {
           variants={staggerContainer}
           className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6"
         >
-          {categories.map((category) => (
-            <motion.div key={category.id} variants={fadeInUp}>
-              <Link
-                to={`/galerie?categorie=${category.slug}`}
-                className={cn(
-                  'group block relative aspect-square rounded-2xl overflow-hidden',
-                  'bg-gray-100'
-                )}
-              >
-                {/* Background placeholder */}
-                <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300" />
-
-                {/* Overlay */}
-                <div className={cn(
-                  'absolute inset-0',
-                  'bg-black/30 group-hover:bg-black/50',
-                  'transition-all duration-300'
-                )} />
-
-                {/* Label */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className={cn(
-                    'text-white text-lg sm:text-xl font-light tracking-wide',
-                    'transform group-hover:scale-105',
-                    'transition-transform duration-300'
-                  )}>
-                    {category.name}
-                  </span>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
+          {loading
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <motion.div key={i} variants={fadeInUp}>
+                  <div className="aspect-square rounded-2xl bg-gray-100 animate-pulse" />
+                </motion.div>
+              ))
+            : categories.map((category) => (
+                <motion.div key={category.id} variants={fadeInUp}>
+                  <Link
+                    to={`/galerie?categorie=${category.slug}`}
+                    className={cn(
+                      'group block relative aspect-square rounded-2xl overflow-hidden',
+                      'bg-gray-100'
+                    )}
+                  >
+                    <div className="absolute inset-0 bg-linear-to-br from-gray-200 to-gray-300" />
+                    <div className={cn(
+                      'absolute inset-0',
+                      'bg-black/30 group-hover:bg-black/50',
+                      'transition-all duration-300'
+                    )} />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                      <span className={cn(
+                        'text-white text-lg sm:text-xl font-light tracking-wide',
+                        'transform group-hover:scale-105',
+                        'transition-transform duration-300'
+                      )}>
+                        {category.name}
+                      </span>
+                      {category.subcategories.length > 0 && (
+                        <span className="text-white/60 text-xs">
+                          {category.subcategories.length} sous-catégorie{category.subcategories.length > 1 ? 's' : ''}
+                        </span>
+                      )}
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
         </motion.div>
       </div>
     </section>
@@ -465,24 +521,18 @@ function CTASection() {
 // ============================================
 
 export function HomePage() {
-  // Scroll en haut au chargement
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
 
   return (
     <div className="min-h-screen overflow-x-hidden">
-      {/* Header transparent sur le hero */}
       <Header forceTransparent />
-
-      {/* Sections */}
       <HeroSection />
       <ArtistSection />
       <FeaturedSection />
       <CategoriesSection />
       <CTASection />
-
-      {/* Footer */}
       <Footer />
     </div>
   )

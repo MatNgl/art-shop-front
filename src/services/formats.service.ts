@@ -1,13 +1,13 @@
 // src/services/formats.service.ts
-import { get } from './api'
-import type { Format } from '@/types'
+import { get } from "./api";
+import type { Format } from "@/types";
 
 /**
  * Récupère tous les formats
  * GET /formats
  */
 export async function getFormats(): Promise<Format[]> {
-  return get<Format[]>('/formats')
+  return get<Format[]>("/formats");
 }
 
 /**
@@ -15,5 +15,5 @@ export async function getFormats(): Promise<Format[]> {
  * GET /formats/:id
  */
 export async function getFormatById(id: string): Promise<Format> {
-  return get<Format>(`/formats/${id}`)
+  return get<Format>(`/formats/${id}`);
 }

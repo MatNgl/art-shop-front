@@ -8,7 +8,7 @@ import type { Product, ProductImage } from '@/types'
 export function ProductCardSkeleton() {
   return (
     <div className="flex flex-col gap-3 animate-pulse">
-      <div className="aspect-   3/4 w-full rounded-[15px] bg-gray-100" />
+      <div className="aspect-3/4 w-full rounded-[15px] bg-gray-100" />
       <div className="space-y-2 px-1">
         <div className="h-4 w-3/4 rounded bg-gray-100" />
         <div className="h-3 w-full rounded bg-gray-100" />
@@ -38,8 +38,7 @@ export function ProductCard({
   const imageUrl = primaryImage?.urls.medium ?? primaryImage?.url ?? null
 
   // ── Contenu image (passé à TiltedCard) ──────────────────
-  const imageContent =
-    imageUrl && !imgError ? (
+  const imageContent =  imageUrl && !imgError ? (
       <img
         src={imageUrl}
         alt={primaryImage?.altText ?? product.name}

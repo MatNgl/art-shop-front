@@ -5,6 +5,7 @@ import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react'
 import { VariantSelector } from '@/components/catalog/VariantSelector'
 import { QuantitySelector } from '@/components/catalog/QuantitySelector'
 import { ProductCard, ProductCardSkeleton } from '@/components/catalog/ProductCard'
+import { toast } from 'sonner'
 import {
   getProductBySlug,
   getProductVariants,
@@ -19,7 +20,7 @@ function ProductDetailSkeleton() {
     <div className="mx-auto max-w-5xl animate-pulse px-6 py-12 lg:px-12">
       <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
         <div className="space-y-4">
-          <div className="aspect-[4/5] w-full rounded-2xl bg-gray-100" />
+          <div className="aspect-4/5 w-full rounded-2xl bg-gray-100" />
           <div className="flex gap-2">
             {[1, 2, 3].map((i) => (
               <div key={i} className="h-16 w-16 rounded-lg bg-gray-100" />
@@ -91,8 +92,11 @@ export default function ProductDetail() {
 
         // Charge les produits similaires (exclut le produit courant, max 4)
         void loadRelatedProducts(fetchedProduct.id)
-      } catch {
+       } catch {
         setNotFound(true)
+        toast.error('Œuvre introuvable', {
+          description: 'Cette œuvre n\'existe pas ou a été retirée.',
+        })
       } finally {
         setLoading(false)
       }
@@ -125,7 +129,9 @@ export default function ProductDetail() {
       })
       setRelatedImages(map)
     } catch {
-      // Silencieux — les produits similaires sont non-critiques
+      toast.error('Impossible de charger les suggestions', {
+        description: 'Les œuvres similaires sont indisponibles.',
+      })
     }
   }
 
@@ -182,7 +188,7 @@ export default function ProductDetail() {
 
             {/* Image principale */}
             <div className="relative overflow-hidden rounded-2xl bg-gray-50">
-              <div className="aspect-[4/5]">
+              <div className="aspect-4/5">
                 <AnimatePresence mode="wait">
                   {activeImage ? (
                     <motion.img
@@ -231,7 +237,7 @@ export default function ProductDetail() {
                   <button
                     key={img.id}
                     onClick={() => setActiveImageIndex(i)}
-                    className={`h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all ${
+                    className={`h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-all ${
                       i === activeImageIndex
                         ? 'border-gray-900 opacity-100'
                         : 'border-transparent opacity-40 hover:opacity-70'
