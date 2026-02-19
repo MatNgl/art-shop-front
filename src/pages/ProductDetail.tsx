@@ -98,6 +98,7 @@ export default function ProductDetail() {
        } catch {
         setNotFound(true)
         toast.error('Œuvre introuvable', {
+          id: 'product-not-found',
           description: 'Cette œuvre n\'existe pas ou a été retirée.',
         })
       } finally {
@@ -132,7 +133,8 @@ export default function ProductDetail() {
       })
       setRelatedImages(map)
     } catch {
-      toast.error('Impossible de charger les suggestions', {
+      toast.error('Suggestions indisponibles', {
+        id: 'related-products-error',
         description: 'Les œuvres similaires sont indisponibles.',
       })
     }
