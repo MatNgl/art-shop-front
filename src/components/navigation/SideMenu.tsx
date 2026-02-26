@@ -1,4 +1,3 @@
-// src/components/navigation/SideMenu.tsx
 import { useCallback, useLayoutEffect, useRef, useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate, useLocation } from 'react-router-dom'

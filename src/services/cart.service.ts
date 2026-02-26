@@ -1,9 +1,5 @@
-import { get, post, patch, del } from './api'
-import type {
-  Cart,
-  GuestCartResponse,
-  AddCartItemPayload,
-} from '@/types'
+import { get, post, patch, del } from "./api";
+import type { Cart, GuestCartResponse, AddCartItemPayload } from "@/types";
 
 /**
  * Récupère le panier actif de l'utilisateur connecté
@@ -11,9 +7,9 @@ import type {
  */
 export async function getActiveCart(): Promise<Cart | null> {
   try {
-    return await get<Cart>('/carts/me')
+    return await get<Cart>("/carts/me");
   } catch {
-    return null
+    return null;
   }
 }
 
@@ -22,7 +18,7 @@ export async function getActiveCart(): Promise<Cart | null> {
  * POST /carts/items
  */
 export async function addItem(payload: AddCartItemPayload): Promise<Cart> {
-  return post<Cart>('/carts/items', payload)
+  return post<Cart>("/carts/items", payload);
 }
 
 /**
@@ -32,7 +28,7 @@ export async function addItem(payload: AddCartItemPayload): Promise<Cart> {
 export async function addItemAsGuest(
   payload: AddCartItemPayload,
 ): Promise<GuestCartResponse> {
-  return post<GuestCartResponse>('/carts/guest/items', payload)
+  return post<GuestCartResponse>("/carts/guest/items", payload);
 }
 
 /**
@@ -43,7 +39,7 @@ export async function updateItemQuantity(
   itemId: string,
   payload: { quantity: number },
 ): Promise<Cart> {
-  return patch<Cart>(`/carts/items/${itemId}`, payload)
+  return patch<Cart>(`/carts/items/${itemId}`, payload);
 }
 
 /**
@@ -51,7 +47,7 @@ export async function updateItemQuantity(
  * DELETE /carts/items/:itemId
  */
 export async function removeItem(itemId: string): Promise<Cart> {
-  return del<Cart>(`/carts/items/${itemId}`)
+  return del<Cart>(`/carts/items/${itemId}`);
 }
 
 /**
@@ -59,5 +55,5 @@ export async function removeItem(itemId: string): Promise<Cart> {
  * DELETE /carts/items
  */
 export async function clearCart(): Promise<Cart> {
-  return del<Cart>('/carts/items')
+  return del<Cart>("/carts/items");
 }

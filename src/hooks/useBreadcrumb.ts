@@ -1,13 +1,13 @@
-import { useMemo } from 'react'
-import type { BreadcrumbItem } from '@/components/navigation/Breadcrumb'
-import type { CategoryWithSubcategories, Product } from '@/types'
+import { useMemo } from "react";
+import type { BreadcrumbItem } from "@/components/navigation/Breadcrumb";
+import type { CategoryWithSubcategories, Product } from "@/types";
 
 // ── Breadcrumb pour la page Catalogue ───────────
 
 interface CatalogueBreadcrumbParams {
-  categories: CategoryWithSubcategories[]
-  activeCategory: string | null
-  activeSubcategory: string | null
+  categories: CategoryWithSubcategories[];
+  activeCategory: string | null;
+  activeSubcategory: string | null;
 }
 
 /**
@@ -23,35 +23,33 @@ export function useCatalogueBreadcrumb({
   activeSubcategory,
 }: CatalogueBreadcrumbParams): BreadcrumbItem[] {
   return useMemo(() => {
-    const items: BreadcrumbItem[] = [
-      { label: 'Accueil', href: '/' },
-    ]
+    const items: BreadcrumbItem[] = [{ label: "Accueil", href: "/" }];
 
     // Pas de filtre actif → Galerie est la page courante
     if (!activeCategory && !activeSubcategory) {
-      items.push({ label: 'Galerie' })
-      return items
+      items.push({ label: "Galerie" });
+      return items;
     }
 
     // Un filtre actif → Galerie devient cliquable
-    items.push({ label: 'Galerie', href: '/galerie' })
+    items.push({ label: "Galerie", href: "/galerie" });
 
     // Recherche de la catégorie active
     const category = activeCategory
       ? categories.find((c) => c.slug === activeCategory)
-      : null
+      : null;
 
     if (activeSubcategory) {
       // Sous-catégorie active → on cherche sa catégorie parente
-      let parentCategory: CategoryWithSubcategories | undefined
-      let subcategoryName: string | undefined
+      let parentCategory: CategoryWithSubcategories | undefined;
+      let subcategoryName: string | undefined;
 
       for (const cat of categories) {
-        const sub = cat.subcategories.find((s) => s.slug === activeSubcategory)
+        const sub = cat.subcategories.find((s) => s.slug === activeSubcategory);
         if (sub) {
-          parentCategory = cat
-          subcategoryName = sub.name
-          break
+          parentCategory = cat;
+          subcategoryName = sub.name;
+          break;
         }
       }
 
@@ -59,23 +57,23 @@ export function useCatalogueBreadcrumb({
         items.push({
           label: parentCategory.name,
           href: `/galerie?categorie=${parentCategory.slug}`,
-        })
+        });
       }
 
-      items.push({ label: subcategoryName ?? activeSubcategory })
+      items.push({ label: subcategoryName ?? activeSubcategory });
     } else if (category) {
       // Catégorie seule
-      items.push({ label: category.name })
+      items.push({ label: category.name });
     }
 
-    return items
-  }, [categories, activeCategory, activeSubcategory])
+    return items;
+  }, [categories, activeCategory, activeSubcategory]);
 }
 
 // ── Breadcrumb pour la page détail produit ──────
 
 interface ProductDetailBreadcrumbParams {
-  product: Product | null
+  product: Product | null;
 }
 
 /**
@@ -88,25 +86,25 @@ export function useProductDetailBreadcrumb({
   product,
 }: ProductDetailBreadcrumbParams): BreadcrumbItem[] {
   return useMemo(() => {
-    if (!product) return []
+    if (!product) return [];
 
     const items: BreadcrumbItem[] = [
-      { label: 'Accueil', href: '/' },
-      { label: 'Galerie', href: '/galerie' },
-    ]
+      { label: "Accueil", href: "/" },
+      { label: "Galerie", href: "/galerie" },
+    ];
 
     // Si le produit a une catégorie, on l'insère
-    const firstCategory = product.categories?.[0]
+    const firstCategory = product.categories?.[0];
     if (firstCategory) {
       items.push({
         label: firstCategory.name,
         href: `/galerie?categorie=${firstCategory.slug}`,
-      })
+      });
     }
 
     // Nom de l'œuvre (page courante)
-    items.push({ label: product.name })
+    items.push({ label: product.name });
 
-    return items
-  }, [product])
+    return items;
+  }, [product]);
 }

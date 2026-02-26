@@ -1,4 +1,3 @@
-// src/services/formats.service.ts
 import { get } from "./api";
 import type { Format } from "@/types";
 

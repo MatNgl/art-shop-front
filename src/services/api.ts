@@ -59,9 +59,9 @@ export function post<T>(endpoint: string, body: unknown): Promise<T> {
 /** PATCH request */
 export function patch<T>(endpoint: string, body: unknown): Promise<T> {
   return request<T>(endpoint, {
-    method: 'PATCH',
+    method: "PATCH",
     body: JSON.stringify(body),
-  })
+  });
 }
 
 /** PUT request */
