@@ -1,8 +1,12 @@
+// src/types/cart.types.ts
+
 /** Item dans le panier (retourné par l'API — DTO aplati) */
 export interface CartItem {
   id: string
   productVariantId: string
   productName: string
+  productSlug: string
+  productImageUrl: string | null
   formatName: string
   materialName: string
   quantity: number

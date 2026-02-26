@@ -6,9 +6,10 @@ import {
 } from 'react'
 import { TOKEN_KEY } from '@/services/api'
 import * as cartService from '@/services/cart.service'
-import { CartContext, type CartContextType } from './CartContext';
+import { CartContext, type CartContextType } from './CartContext'
 import type { AddCartItemPayload } from '@/types'
 import { toast } from 'sonner'
+import { useAuth } from '@/hooks'
 
 interface CartProviderProps {
   children: ReactNode
@@ -17,10 +18,12 @@ interface CartProviderProps {
 export function CartProvider({ children }: CartProviderProps) {
   const [cart, setCart] = useState<CartContextType['cart']>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const { isAuthenticated, isLoading: authLoading } = useAuth()
 
   const itemCount = cart?.itemCount ?? 0
   const total = cart?.total ?? 0
 
+  // ── Rafraîchir le panier ──────────────────────
   const refreshCart = useCallback(async () => {
     const token = localStorage.getItem(TOKEN_KEY)
     if (!token) {
@@ -36,14 +39,19 @@ export function CartProvider({ children }: CartProviderProps) {
     }
   }, [])
 
+  // ── Synchro avec l'état d'authentification ────
+  // Se déclenche au login, logout, et au chargement initial
   useEffect(() => {
-    refreshCart()
-  }, [refreshCart])
+    if (!authLoading) {
+      void refreshCart()
+    }
+  }, [isAuthenticated, authLoading, refreshCart])
 
+  // ── Synchro multi-onglets (StorageEvent) ──────
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === TOKEN_KEY) {
-        refreshCart()
+        void refreshCart()
       }
     }
 
@@ -51,6 +59,7 @@ export function CartProvider({ children }: CartProviderProps) {
     return () => window.removeEventListener('storage', handleStorageChange)
   }, [refreshCart])
 
+  // ── Ajouter un article ────────────────────────
   const addItem = useCallback(
     async (payload: AddCartItemPayload) => {
       setIsLoading(true)
@@ -65,10 +74,9 @@ export function CartProvider({ children }: CartProviderProps) {
           localStorage.setItem(TOKEN_KEY, response.accessToken)
           setCart(response.cart)
         }
-
       } catch (error) {
         const message =
-          error instanceof Error ? error.message : 'Erreur lors de l\'ajout'
+          error instanceof Error ? error.message : "Erreur lors de l'ajout"
         toast.error(message)
         throw error
       } finally {
@@ -78,6 +86,7 @@ export function CartProvider({ children }: CartProviderProps) {
     [],
   )
 
+  // ── Modifier la quantité ──────────────────────
   const updateQuantity = useCallback(
     async (itemId: string, quantity: number) => {
       setIsLoading(true)
@@ -98,6 +107,7 @@ export function CartProvider({ children }: CartProviderProps) {
     [],
   )
 
+  // ── Supprimer un article ──────────────────────
   const removeItem = useCallback(
     async (itemId: string) => {
       setIsLoading(true)
@@ -117,6 +127,7 @@ export function CartProvider({ children }: CartProviderProps) {
     [],
   )
 
+  // ── Vider le panier ───────────────────────────
   const clearCart = useCallback(async () => {
     setIsLoading(true)
     try {

@@ -1,4 +1,3 @@
-// src/components/layout/Header.tsx
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { X as XIcon } from 'lucide-react'
@@ -6,11 +5,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { SideMenu, type MenuItem } from '../navigation/SideMenu'
 import { SearchDropdown } from '../search/SearchDropdown'
 import { cn } from '@/lib/utils'
-import { useAuth } from '@/hooks'
+import { useAuth, useCart } from '@/hooks'
 import { SearchIcon } from '@/components/ui/search'
 import { UserIcon } from '@/components/ui/user'
 import { HeartIcon } from '@/components/ui/heart'
-import { CartIcon } from '@/components/ui/cart'
+import { CartIcon as AnimatedCartIcon } from '@/components/ui/cart'
 
 const menuItems: MenuItem[] = [
   { label: 'Accueil', href: '/' },
@@ -28,6 +27,7 @@ export function Header({ forceTransparent = false }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [isScrolled, setIsScrolled] = useState(false)
   const { isAuthenticated } = useAuth()
+  const { itemCount } = useCart()
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50)
@@ -130,7 +130,6 @@ export function Header({ forceTransparent = false }: HeaderProps) {
                       <XIcon size={14} />
                     </button>
 
-                    {/* Dropdown résultats — monté seulement si query >= 2 chars */}
                     {searchQuery.trim().length >= 2 && (
                       <SearchDropdown
                         query={searchQuery}
@@ -172,13 +171,18 @@ export function Header({ forceTransparent = false }: HeaderProps) {
               <HeartIcon size={18} />
             </Link>
 
-            {/* ── Panier ── */}
+            {/* ── Panier avec badge ── */}
             <Link
               to="/panier"
-              className="rounded-full p-2 transition-colors duration-200 hover:bg-black/5"
-              aria-label="Panier"
+              className="relative rounded-full p-2 transition-colors duration-200 hover:bg-black/5"
+              aria-label={`Panier (${itemCount} article${itemCount > 1 ? 's' : ''})`}
             >
-              <CartIcon size={18} />
+              <AnimatedCartIcon size={18} />
+              {itemCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-gray-900 text-[9px] font-medium text-white">
+                  {itemCount > 99 ? '99+' : itemCount}
+                </span>
+              )}
             </Link>
 
           </div>

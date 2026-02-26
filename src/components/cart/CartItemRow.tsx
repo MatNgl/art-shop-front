@@ -1,3 +1,6 @@
+// src/components/cart/CartItemRow.tsx
+
+import { Link } from 'react-router-dom'
 import { Minus, Plus, Trash2 } from 'lucide-react'
 import { useCart } from '@/hooks/useCart'
 import type { CartItem } from '@/types'
@@ -23,13 +26,49 @@ export function CartItemRow({ item }: CartItemRowProps) {
     removeItem(item.id)
   }
 
+  const productHref = item.productSlug ? `/oeuvre/${item.productSlug}` : null
+
   return (
     <div className="flex gap-4 py-6 border-b border-gray-100 last:border-0">
+      {/* Miniature */}
+      {productHref ? (
+        <Link to={productHref} className="shrink-0">
+          {item.productImageUrl ? (
+            <img
+              src={item.productImageUrl}
+              alt={item.productName}
+              className="h-20 w-20 rounded-xl object-cover bg-gray-50"
+            />
+          ) : (
+            <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-gray-50">
+              <span className="text-[9px] uppercase tracking-widest text-gray-300">
+                Sans image
+              </span>
+            </div>
+          )}
+        </Link>
+      ) : (
+        <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-gray-50">
+          <span className="text-[9px] uppercase tracking-widest text-gray-300">
+            Sans image
+          </span>
+        </div>
+      )}
+
       {/* Détails */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-900 line-clamp-1">
-          {item.productName}
-        </p>
+        {productHref ? (
+          <Link
+            to={productHref}
+            className="text-sm font-medium text-gray-900 line-clamp-1 hover:underline underline-offset-2"
+          >
+            {item.productName}
+          </Link>
+        ) : (
+          <p className="text-sm font-medium text-gray-900 line-clamp-1">
+            {item.productName}
+          </p>
+        )}
 
         <p className="mt-0.5 text-xs text-gray-500">
           {item.formatName}{item.materialName ? ` · ${item.materialName}` : ''}
