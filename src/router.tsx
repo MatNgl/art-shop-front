@@ -6,6 +6,7 @@ import Catalogue from '@/pages/Catalogue'
 import ProductDetail from '@/pages/ProductDetail'
 import CategoryPage from '@/pages/CategoryPage'
 import NotFoundPage from '@/pages/NotFoundPage'
+import CartPage from '@/pages/CartPage'
 
 
 export const router = createBrowserRouter([
@@ -43,9 +44,9 @@ export const router = createBrowserRouter([
         path: '/favoris',
         element: <div className="pt-20 p-8">Page Favoris (à créer)</div>,
       },
-      {
+       {
         path: '/panier',
-        element: <div className="pt-20 p-8">Page Panier (à créer)</div>,
+        element: <CartPage />,
       },
       {
         path: '/compte',

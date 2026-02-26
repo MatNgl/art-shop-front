@@ -1,12 +1,15 @@
+// src/pages/ProductDetail.tsx
+
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react'
 import { VariantSelector } from '@/components/catalog/VariantSelector'
 import { QuantitySelector } from '@/components/catalog/QuantitySelector'
-import { ProductCard, ProductCardSkeleton } from '@/components/catalog/ProductCard'
+import { ProductCard } from '@/components/catalog/ProductCard'
 import { Breadcrumb } from '@/components/navigation/Breadcrumb'
 import { useProductDetailBreadcrumb } from '@/hooks/useBreadcrumb'
+import { useCart } from '@/hooks/useCart'
 import { toast } from 'sonner'
 import {
   getProductBySlug,
@@ -53,6 +56,7 @@ function ProductDetailSkeleton() {
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
+  const { addItem } = useCart()
 
   const [product, setProduct] = useState<Product | null>(null)
   const [variants, setVariants] = useState<ProductVariant[]>([])
@@ -67,6 +71,7 @@ export default function ProductDetail() {
   const [relatedImages, setRelatedImages] = useState<Record<string, ProductImage>>({})
 
   const breadcrumbItems = useProductDetailBreadcrumb({ product })
+
   useEffect(() => {
     if (!slug) return
 
@@ -93,9 +98,8 @@ export default function ProductDetail() {
         const firstAvailable = fetchedVariants.find((v) => v.status === 'AVAILABLE')
         if (firstAvailable) setSelectedVariant(firstAvailable)
 
-        // Charge les produits similaires (exclut le produit courant, max 4)
         void loadRelatedProducts(fetchedProduct.id)
-       } catch {
+      } catch {
         setNotFound(true)
         toast.error('Œuvre introuvable', {
           id: 'product-not-found',
@@ -115,7 +119,6 @@ export default function ProductDetail() {
       const others = all.filter((p) => p.id !== currentProductId).slice(0, 4)
       setRelatedProducts(others)
 
-      // Charge les images principales en parallèle
       const results = await Promise.allSettled(
         others.map((p) =>
           getProductImages(p.id).then((imgs) => ({
@@ -140,8 +143,11 @@ export default function ProductDetail() {
     }
   }
 
-  function handleAddToCart(variant: ProductVariant, quantity: number): void {
-    console.log('Add to cart:', { variant, quantity })
+  async function handleAddToCart(variant: ProductVariant, quantity: number): Promise<void> {
+    await addItem({
+      productVariantId: variant.id,
+      quantity,
+    })
   }
 
   function prevImage(): void {
@@ -172,7 +178,6 @@ export default function ProductDetail() {
 
   return (
     <main className="min-h-screen bg-white">
-
       {/* ── Bouton retour ── */}
       <div className="mx-auto max-w-5xl px-6 pt-8 lg:px-12">
         <button
@@ -188,11 +193,8 @@ export default function ProductDetail() {
       <div className="mx-auto max-w-5xl px-6 py-8 lg:px-12">
         <Breadcrumb items={breadcrumbItems} className="mb-6" />
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
-
           {/* ── Colonne image ── */}
           <div className="space-y-4">
-
-            {/* Image principale */}
             <div className="relative overflow-hidden rounded-2xl bg-gray-50">
               <div className="aspect-4/5">
                 <AnimatePresence mode="wait">
@@ -215,7 +217,6 @@ export default function ProductDetail() {
                 </AnimatePresence>
               </div>
 
-              {/* Flèches navigation */}
               {images.length > 1 && (
                 <>
                   <button
@@ -236,7 +237,6 @@ export default function ProductDetail() {
               )}
             </div>
 
-            {/* Miniatures */}
             {images.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-1">
                 {images.map((img, i) => (
@@ -262,8 +262,6 @@ export default function ProductDetail() {
 
           {/* ── Colonne infos ── */}
           <div className="flex flex-col gap-6 lg:pt-2">
-
-            {/* Tags */}
             {product.tags.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {product.tags.map((tag) => (
@@ -277,7 +275,6 @@ export default function ProductDetail() {
               </div>
             )}
 
-            {/* Titre */}
             <div>
               <h1 className="text-3xl font-semibold leading-tight tracking-tight text-gray-900">
                 {product.name}
@@ -289,7 +286,6 @@ export default function ProductDetail() {
               )}
             </div>
 
-            {/* Description */}
             {product.description && (
               <div className="border-t border-gray-100 pt-4">
                 <p className="text-sm leading-relaxed text-gray-600 whitespace-pre-line">
@@ -298,7 +294,6 @@ export default function ProductDetail() {
               </div>
             )}
 
-            {/* Variantes + panier */}
             {variants.length > 0 ? (
               <div className="border-t border-gray-100 pt-4 space-y-6">
                 <VariantSelector
@@ -322,7 +317,6 @@ export default function ProductDetail() {
               </div>
             )}
 
-            {/* Infos impression */}
             <div className="rounded-xl bg-gray-50 p-5 space-y-1.5">
               <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
                 À propos de l'impression
@@ -337,7 +331,7 @@ export default function ProductDetail() {
       </div>
 
       {/* ── Produits similaires ── */}
-      {(relatedProducts.length > 0) && (
+      {relatedProducts.length > 0 && (
         <section className="mx-auto max-w-5xl px-6 py-16 lg:px-12">
           <div className="mb-8 border-t border-gray-100 pt-10">
             <h2 className="text-xl font-semibold tracking-tight text-gray-900">
@@ -349,21 +343,16 @@ export default function ProductDetail() {
           </div>
 
           <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
-            {relatedProducts.length === 0
-              ? Array.from({ length: 4 }).map((_, i) => (
-                  <ProductCardSkeleton key={i} />
-                ))
-              : relatedProducts.map((p) => (
-                  <ProductCard
-                    key={p.id}
-                    product={p}
-                    primaryImage={relatedImages[p.id]}
-                  />
-                ))}
+            {relatedProducts.map((p) => (
+              <ProductCard
+                key={p.id}
+                product={p}
+                primaryImage={relatedImages[p.id]}
+              />
+            ))}
           </div>
         </section>
       )}
-
     </main>
   )
 }
