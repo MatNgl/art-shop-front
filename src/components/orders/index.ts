@@ -1,11 +1,2 @@
-export { OrderStatusBadge } from "./OrderStatusBadge"
-export { OrderTimeline, OrderTimelineSkeleton } from "./OrderTimeline"
-
-
-
-
-
-
-
-
-
+export { OrderStatusBadge } from "./OrderStatusBadge";
+export { OrderTimeline, OrderTimelineSkeleton } from "./OrderTimeline";

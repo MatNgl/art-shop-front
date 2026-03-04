@@ -1,17 +1,11 @@
 import { get, post, patch } from "./api";
-import type {
-  Order,
-  OrderSummary,
-  CreateOrderPayload,
-} from "@/types";
+import type { Order, OrderSummary, CreateOrderPayload } from "@/types";
 
 /**
  * Crée une commande depuis le panier actif
  * POST /orders
  */
-export async function createOrder(
-  payload: CreateOrderPayload,
-): Promise<Order> {
+export async function createOrder(payload: CreateOrderPayload): Promise<Order> {
   return post<Order>("/orders", payload);
 }
 
