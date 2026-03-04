@@ -5,3 +5,6 @@ export * as productsService from "./products.service";
 export * as formatsService from "./formats.service";
 export * as addressesService from "./addresses.service";
 export * as cartService from "./cart.service";
+export * as ordersService from "./orders.service";
+export * as paymentsService from "./payments.service";
+
