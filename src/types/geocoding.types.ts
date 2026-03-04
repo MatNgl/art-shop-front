@@ -1,64 +1,62 @@
-// -------------------------------------------------------
 // Types pour l'API Géoplateforme (geocodage IGN)
 // https://data.geopf.fr/geocodage/search/
 // Réponse au format GeoJSON FeatureCollection
-// -------------------------------------------------------
 
 /** Propriétés d'un résultat d'adresse retourné par l'API */
 export interface GeocodingProperties {
   /** Label complet affiché (ex: "12 Rue de la Paix 75002 Paris") */
-  label: string
+  label: string;
   /** Score de pertinence (0 à 1) */
-  score: number
+  score: number;
   /** Numéro de voie */
-  housenumber: string
+  housenumber: string;
   /** Identifiant unique BAN */
-  id: string
+  id: string;
   /** Type de résultat : housenumber, street, municipality, locality */
-  type: string
+  type: string;
   /** Nom de la voie (ex: "Rue de la Paix") */
-  street: string
+  street: string;
   /** Nom complet du résultat */
-  name: string
+  name: string;
   /** Code postal */
-  postcode: string
+  postcode: string;
   /** Code INSEE de la commune */
-  citycode: string
+  citycode: string;
   /** Nom de la commune */
-  city: string
+  city: string;
   /** Contexte géographique (ex: "75, Paris, Île-de-France") */
-  context: string
+  context: string;
   /** Importance relative du lieu */
-  importance: number
+  importance: number;
 }
 
 /** Feature GeoJSON individuelle (un résultat d'adresse) */
 export interface GeocodingFeature {
-  type: 'Feature'
+  type: "Feature";
   geometry: {
-    type: 'Point'
-    coordinates: [longitude: number, latitude: number]
-  }
-  properties: GeocodingProperties
+    type: "Point";
+    coordinates: [longitude: number, latitude: number];
+  };
+  properties: GeocodingProperties;
 }
 
 /** Réponse complète de l'API (FeatureCollection GeoJSON) */
 export interface GeocodingResponse {
-  type: 'FeatureCollection'
-  version: string
-  features: GeocodingFeature[]
-  attribution: string
-  licence: string
-  query: string
-  limit: number
+  type: "FeatureCollection";
+  version: string;
+  features: GeocodingFeature[];
+  attribution: string;
+  licence: string;
+  query: string;
+  limit: number;
 }
 
 /** Adresse structurée extraite d'une suggestion */
 export interface ParsedAddress {
   /** Numéro + rue (ex: "12 Rue de la Paix") */
-  line1: string
+  line1: string;
   /** Code postal */
-  postalCode: string
+  postalCode: string;
   /** Ville */
-  city: string
+  city: string;
 }

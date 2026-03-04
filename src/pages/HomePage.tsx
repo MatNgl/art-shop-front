@@ -18,9 +18,9 @@ import {
 import { getCategoriesWithSubcategories } from '@/services/categories.service'
 import type { Product, ProductImage, CategoryWithSubcategories, ProductVariant } from '@/types'
 
-// ============================================
+
 // ANIMATIONS
-// ============================================
+
 
 const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 30 },
@@ -42,9 +42,9 @@ const staggerContainer: Variants = {
   },
 }
 
-// ============================================
+
 // HELPERS
-// ============================================
+
 
 function getMinPrice(variants: ProductVariant[]): number | null {
   const available = variants.filter((v) => v.status === 'AVAILABLE')
@@ -52,9 +52,9 @@ function getMinPrice(variants: ProductVariant[]): number | null {
   return Math.min(...available.map((v) => Number(v.price)))
 }
 
-// ============================================
+
 // COMPOSANTS DE SECTION
-// ============================================
+
 
 /** Section Hero avec background animé */
 function HeroSection() {
@@ -516,9 +516,9 @@ function CTASection() {
   )
 }
 
-// ============================================
+
 // PAGE PRINCIPALE
-// ============================================
+
 
 export function HomePage() {
   useEffect(() => {

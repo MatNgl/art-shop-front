@@ -135,9 +135,7 @@ body {
   }
 }
 
-/* ============================================
-   CUSTOM SCROLLBAR
-   ============================================ */
+/*    CUSTOM SCROLLBAR  */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -156,9 +154,7 @@ body {
   background: oklch(0.7 0 0);
 }
 
-/* ============================================
-   TYPOGRAPHY
-   ============================================ */
+/* TYPOGRAPHY */
 
 /* Titres avec tracking large pour effet artistique */
 .heading-artistic {

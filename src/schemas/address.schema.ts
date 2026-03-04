@@ -14,9 +14,9 @@ export const addressSchema = z.object({
     .max(255, "Le complément ne peut pas dépasser 255 caractères")
     .optional()
     .or(z.literal("")),
- postalCode: z
-  .string()
-  .regex(/^\d{5}$/, 'Le code postal doit contenir 5 chiffres'),
+  postalCode: z
+    .string()
+    .regex(/^\d{5}$/, "Le code postal doit contenir 5 chiffres"),
   city: z
     .string()
     .min(1, "La ville est requise")

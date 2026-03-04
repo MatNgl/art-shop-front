@@ -19,9 +19,9 @@ export default function ProfilePage() {
   const [showForm, setShowForm] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // ------------------------------------------
+  
   // Chargement des adresses
-  // ------------------------------------------
+  
   const loadAddresses = useCallback(async () => {
     try {
       const data = await addressesService.getAddresses()
@@ -37,9 +37,9 @@ export default function ProfilePage() {
     loadAddresses()
   }, [loadAddresses])
 
-  // ------------------------------------------
+  
   // Handlers adresses
-  // ------------------------------------------
+  
   const handleSubmitAddress = async (data: AddressFormData) => {
     setIsSubmitting(true)
     try {
@@ -107,15 +107,14 @@ export default function ProfilePage() {
     navigate('/')
   }
 
-  // ------------------------------------------
+  
   // Rendu
-  // ------------------------------------------
+  
   return (
     <main className="min-h-screen pt-28 pb-16 px-6">
       <div className="max-w-2xl mx-auto space-y-10">
-        {/* ============================== */}
-        {/* Section Profil                 */}
-        {/* ============================== */}
+        
+        {/* Section Profil */}
         <section>
           <div className="flex items-center gap-2 mb-6">
             <User size={18} className="text-gray-400" />
@@ -168,9 +167,9 @@ export default function ProfilePage() {
           </div>
         </section>
 
-        {/* ============================== */}
+        
         {/* Section Adresses               */}
-        {/* ============================== */}
+        
         <section>
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">

@@ -33,9 +33,7 @@ export async function getDefaultAddress(): Promise<Address | null> {
  * Crée une nouvelle adresse
  * POST /addresses
  */
-export async function createAddress(
-  payload: AddressPayload,
-): Promise<Address> {
+export async function createAddress(payload: AddressPayload): Promise<Address> {
   return post<Address>("/addresses", payload);
 }
 

@@ -101,9 +101,9 @@ export function AddressForm({
           )}
         </div>
 
-        {/* ============================================= */}
+        
         {/* Autocomplete adresse (API Géoplateforme IGN) */}
-        {/* ============================================= */}
+        
         <div>
           <label className="block text-xs font-medium text-gray-500 mb-1.5">
             Recherche d'adresse

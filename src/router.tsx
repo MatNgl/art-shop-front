@@ -11,9 +11,9 @@ import ProfilePage from '@/pages/ProfilePage'
 
 
 export const router = createBrowserRouter([
-  // ============================================
+  
   // ROUTES PUBLIQUES AVEC LAYOUT PRINCIPAL
-  // ============================================
+  
   {
     element: <MainLayout />,
     children: [
@@ -72,9 +72,9 @@ export const router = createBrowserRouter([
     ],
   },
 
-  // ============================================
+  
   // ROUTES SANS LAYOUT (pages plein écran)
-  // ============================================
+  
   {
     element: <MinimalLayout />,
     children: [

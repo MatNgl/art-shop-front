@@ -6,9 +6,9 @@ import { CartItemRow } from '@/components/cart/CartItemRow'
 export default function CartPage() {
   const { cart, itemCount, total, clearCart, isLoading } = useCart()
 
-  // ------------------------------------------
+  
   // Panier vide
-  // ------------------------------------------
+  
   if (!cart || cart.items.length === 0) {
     return (
       <main className="min-h-screen pt-28 pb-16 px-6">
@@ -33,9 +33,9 @@ export default function CartPage() {
     )
   }
 
-  // ------------------------------------------
+  
   // Panier avec articles
-  // ------------------------------------------
+  
   return (
     <main className="min-h-screen pt-28 pb-16 px-6">
       <div className="max-w-3xl mx-auto">
