@@ -50,7 +50,7 @@ export const router = createBrowserRouter([
         element: <CartPage />,
       },
       {
-        path: '/compte',
+        path: '/profil',
         element: <ProfilePage />,
       },
       {

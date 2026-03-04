@@ -1,10 +1,10 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { ProductCard, ProductCardSkeleton } from '@/components/catalog/ProductCard'
+import { ProductCard, ProductCardSkeleton } from '@/components/catalog'
 import { getCategoriesWithSubcategories } from '@/services/categories.service'
-import { Breadcrumb } from '@/components/navigation/Breadcrumb'
-import { useCatalogueBreadcrumb } from '@/hooks/useBreadcrumb'
+import { Breadcrumb } from '@/components/navigation'
+import { useCatalogueBreadcrumb } from '@/hooks'
 import {
   getPublishedProducts,
   getProductImages,

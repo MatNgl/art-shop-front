@@ -1,19 +1,17 @@
+// src/components/profile/AddressForm.tsx — version refactorée
+
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { X } from 'lucide-react'
-import { addressSchema, type AddressFormData } from '@/schemas/address.schema'
-import { AddressAutocomplete } from '@/components/profile/AddressAutocomplete'
-import type { Address } from '@/types'
-import type { ParsedAddress } from '@/types/geocoding.types'
+import { addressSchema, type AddressFormData } from '@/schemas'
+import { AddressAutocomplete } from '@/components/profile'
+import { FormInput } from '@/components/forms'
+import type { Address, ParsedAddress } from '@/types'
 
 interface AddressFormProps {
-  /** Adresse à modifier (null pour création) */
   address: Address | null
-  /** Callback de soumission */
   onSubmit: (data: AddressFormData) => Promise<void>
-  /** Fermer le formulaire */
   onClose: () => void
-  /** Chargement en cours */
   isLoading?: boolean
 }
 
@@ -41,21 +39,12 @@ export function AddressForm({
     },
   })
 
-  /**
-   * Callback de l'autocomplete — remplit automatiquement
-   * line1, postalCode et city depuis la suggestion sélectionnée.
-   * L'utilisateur peut toujours corriger manuellement après.
-   */
   function handleAddressSelect(parsed: ParsedAddress) {
     setValue('line1', parsed.line1, { shouldValidate: true })
     setValue('postalCode', parsed.postalCode, { shouldValidate: true })
     setValue('city', parsed.city, { shouldValidate: true })
   }
 
-  /**
-   * Construit la valeur initiale de l'autocomplete en mode édition
-   * pour que l'utilisateur voie son adresse existante.
-   */
   function getInitialAutocompleteValue(): string {
     if (!address) return ''
     return `${address.line1} ${address.postalCode} ${address.city}`.trim()
@@ -80,32 +69,16 @@ export function AddressForm({
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Nom du destinataire */}
-        <div>
-          <label
-            htmlFor="recipientName"
-            className="block text-xs font-medium text-gray-500 mb-1.5"
-          >
-            Nom du destinataire
-          </label>
-          <input
-            id="recipientName"
-            type="text"
-            placeholder="Jean Dupont"
-            className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-200 transition-colors"
-            {...register('recipientName')}
-          />
-          {errors.recipientName && (
-            <p className="mt-1 text-xs text-red-500">
-              {errors.recipientName.message}
-            </p>
-          )}
-        </div>
+        <FormInput
+          label="Nom du destinataire"
+          placeholder="Jean Dupont"
+          error={errors.recipientName?.message}
+          {...register('recipientName')}
+        />
 
-        
-        {/* Autocomplete adresse (API Géoplateforme IGN) */}
-        
+        {/* Autocomplete adresse */}
         <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1.5">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Recherche d'adresse
             <span className="ml-1 text-gray-300 font-normal">
               (suggestions automatiques)
@@ -122,91 +95,40 @@ export function AddressForm({
           </p>
         </div>
 
-        {/* Adresse ligne 1 (pré-remplie par l'autocomplete) */}
-        <div>
-          <label
-            htmlFor="line1"
-            className="block text-xs font-medium text-gray-500 mb-1.5"
-          >
-            Adresse
-          </label>
-          <input
-            id="line1"
-            type="text"
-            placeholder="12 rue de la Paix"
-            className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-200 transition-colors"
-            {...register('line1')}
-          />
-          {errors.line1 && (
-            <p className="mt-1 text-xs text-red-500">{errors.line1.message}</p>
-          )}
-        </div>
+        {/* Adresse ligne 1 */}
+        <FormInput
+          label="Adresse"
+          placeholder="12 rue de la Paix"
+          error={errors.line1?.message}
+          {...register('line1')}
+        />
 
-        {/* Adresse ligne 2 */}
-        <div>
-          <label
-            htmlFor="line2"
-            className="block text-xs font-medium text-gray-500 mb-1.5"
-          >
-            Complément d'adresse
-            <span className="ml-1 text-gray-300 font-normal">(optionnel)</span>
-          </label>
-          <input
-            id="line2"
-            type="text"
-            placeholder="Bâtiment A, 3ème étage"
-            className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-200 transition-colors"
-            {...register('line2')}
-          />
-          {errors.line2 && (
-            <p className="mt-1 text-xs text-red-500">{errors.line2.message}</p>
-          )}
-        </div>
+        {/* Complément d'adresse */}
+        <FormInput
+          label="Complément d'adresse (optionnel)"
+          placeholder="Bâtiment A, 3ème étage"
+          error={errors.line2?.message}
+          {...register('line2')}
+        />
 
-        {/* Code postal + Ville (pré-remplis par l'autocomplete) */}
+        {/* Code postal + Ville */}
         <div className="grid grid-cols-3 gap-3">
-          <div>
-            <label
-              htmlFor="postalCode"
-              className="block text-xs font-medium text-gray-500 mb-1.5"
-            >
-              Code postal
-            </label>
-            <input
-              id="postalCode"
-              type="text"
-              placeholder="75001"
-              className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-200 transition-colors"
-              {...register('postalCode')}
-            />
-            {errors.postalCode && (
-              <p className="mt-1 text-xs text-red-500">
-                {errors.postalCode.message}
-              </p>
-            )}
-          </div>
+          <FormInput
+            label="Code postal"
+            placeholder="75001"
+            error={errors.postalCode?.message}
+            {...register('postalCode')}
+          />
 
           <div className="col-span-2">
-            <label
-              htmlFor="city"
-              className="block text-xs font-medium text-gray-500 mb-1.5"
-            >
-              Ville
-            </label>
-            <input
-              id="city"
-              type="text"
+            <FormInput
+              label="Ville"
               placeholder="Paris"
-              className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-200 transition-colors"
+              error={errors.city?.message}
               {...register('city')}
             />
-            {errors.city && (
-              <p className="mt-1 text-xs text-red-500">{errors.city.message}</p>
-            )}
           </div>
         </div>
-
-        
 
         {/* Adresse par défaut */}
         <label className="flex items-center gap-2 cursor-pointer">

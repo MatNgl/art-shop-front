@@ -2,12 +2,11 @@ import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { User, MapPin, Plus, LogOut } from 'lucide-react'
 import { toast } from 'sonner'
-import { useAuth } from '@/hooks/useAuth'
-import { AddressCard } from '@/components/profile/AddressCard'
-import { AddressForm } from '@/components/profile/AddressForm'
+import { useAuth } from '@/hooks'
+import { AddressCard, AddressForm } from '@/components/profile'
 import * as addressesService from '@/services/addresses.service'
 import type { Address, AddressPayload } from '@/types'
-import type { AddressFormData } from '@/schemas/address.schema'
+import type { AddressFormData } from '@/schemas'
 
 export default function ProfilePage() {
   const { user, logout } = useAuth()

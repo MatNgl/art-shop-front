@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ShoppingBag, ArrowLeft, Trash2 } from 'lucide-react'
-import { useCart } from '@/hooks/useCart'
-import { CartItemRow } from '@/components/cart/CartItemRow'
+import { useCart } from '@/hooks'
+import { CartItemRow } from '@/components/cart'
 
 export default function CartPage() {
   const { cart, itemCount, total, clearCart, isLoading } = useCart()

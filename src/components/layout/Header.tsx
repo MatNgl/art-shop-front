@@ -155,9 +155,9 @@ export function Header({ forceTransparent = false }: HeaderProps) {
 
             {/* ── Profil ── */}
             <Link
-              to={isAuthenticated ? '/compte' : '/login'}
+              to={isAuthenticated ? '/profil' : '/login'}
               className="rounded-full p-2 transition-colors duration-200 hover:bg-black/5"
-              aria-label={isAuthenticated ? 'Mon compte' : 'Se connecter'}
+              aria-label={isAuthenticated ? 'Mon profil' : 'Se connecter'}
             >
               <UserIcon size={18} />
             </Link>
