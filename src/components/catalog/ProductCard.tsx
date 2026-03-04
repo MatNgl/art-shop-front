@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils'
 import TiltedCard from '@/components/ui/TiltedCard'
 import type { Product, ProductImage } from '@/types'
 
-// ── Skeleton ────────────────────────────────────────────
+//  Skeleton 
 export function ProductCardSkeleton() {
   return (
     <div className="flex flex-col gap-3 animate-pulse">
@@ -18,7 +18,7 @@ export function ProductCardSkeleton() {
   )
 }
 
-// ── Card ─────────────────────────────────────────────────
+//  Card 
 interface ProductCardProps {
   product: Product
   primaryImage?: ProductImage
@@ -37,7 +37,7 @@ export function ProductCard({
 
   const imageUrl = primaryImage?.urls.medium ?? primaryImage?.url ?? null
 
-  // ── Contenu image (passé à TiltedCard) ──────────────────
+  //  Contenu image (passé à TiltedCard) 
   const imageContent =  imageUrl && !imgError ? (
       <img
         src={imageUrl}
@@ -53,7 +53,7 @@ export function ProductCard({
       </div>
     )
 
-  // ── Badge "Coup de cœur" (overlay TiltedCard) ───────────
+  //  Badge "Coup de cœur" (overlay TiltedCard) 
   const overlayBadge = product.featured ? (
     <span className="m-3 inline-block rounded-full bg-black px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-white">
       Coup de cœur
@@ -87,7 +87,7 @@ export function ProductCard({
         </TiltedCard>
       </div>
 
-      {/* ── Infos ── */}
+      {/*  Infos  */}
       <div className="flex flex-col gap-1 px-1">
         {product.shortDescription && (
           <p className="text-xs text-gray-400 leading-relaxed line-clamp-2">

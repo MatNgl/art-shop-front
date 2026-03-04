@@ -2,9 +2,13 @@ import { Link } from 'react-router-dom'
 import { ShoppingBag, ArrowLeft, Trash2 } from 'lucide-react'
 import { useCart } from '@/hooks'
 import { CartItemRow } from '@/components/cart'
+import { Button } from '@/components/ui/button'
+import { useNavigate } from 'react-router-dom'
+
 
 export default function CartPage() {
   const { cart, itemCount, total, clearCart, isLoading } = useCart()
+const navigate = useNavigate()
 
   
   // Panier vide
@@ -99,11 +103,9 @@ export default function CartPage() {
                 </div>
               </div>
 
-              <button
-                className="mt-6 w-full py-3.5 bg-gray-900 text-white text-sm font-medium rounded-full hover:bg-gray-800 transition-colors"
-              >
+              <Button className="mt-6 w-full rounded-full" size="lg" onClick={() => navigate('/checkout')}>
                 Procéder au paiement
-              </button>
+              </Button>
 
               <p className="mt-4 text-center text-[11px] text-gray-400">
                 Paiement sécurisé par Stripe

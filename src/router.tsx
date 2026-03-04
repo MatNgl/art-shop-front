@@ -8,6 +8,10 @@ import CategoryPage from '@/pages/CategoryPage'
 import NotFoundPage from '@/pages/NotFoundPage'
 import CartPage from '@/pages/CartPage'
 import ProfilePage from '@/pages/ProfilePage'
+import { CheckoutPage } from '@/pages/CheckoutPage'
+import { OrderConfirmationPage } from '@/pages/OrderConfirmationPage'
+import { OrdersPage } from '@/pages/OrdersPage'
+import { OrderDetailPage } from '@/pages/OrderDetailPage'
 
 
 export const router = createBrowserRouter([
@@ -53,6 +57,28 @@ export const router = createBrowserRouter([
         path: '/profil',
         element: <ProfilePage />,
       },
+
+      // ── Tunnel de commande ──
+      {
+        path: '/checkout',
+        element: <CheckoutPage />,
+      },
+      {
+        path: '/orders/:id/confirmation',
+        element: <OrderConfirmationPage />,
+      },
+
+      // ── Suivi commandes ──
+      {
+        path: '/commandes',
+        element: <OrdersPage />,
+      },
+      {
+        path: '/commandes/:id',
+        element: <OrderDetailPage />,
+      },
+
+      // ── Pages légales ──
       {
         path: '/mentions-legales',
         element: <div className="pt-20 p-8">Mentions légales (à créer)</div>,
