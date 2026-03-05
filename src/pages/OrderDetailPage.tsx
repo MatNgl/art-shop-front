@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import {
   ArrowLeft,
@@ -10,18 +10,63 @@ import {
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { CreditCardIcon } from "@/components/ui/creditcard"
+import type { CreditCardIconHandle } from "@/components/ui/creditcard"
 import { OrderStatusBadge, OrderTimeline, OrderTimelineSkeleton } from "@/components/orders"
 import * as ordersService from "@/services/orders.service"
-import { OrderStatus } from "@/types"
-import type { Order } from "@/types"
+import * as paymentsService from "@/services/payments.service"
+import { OrderStatus, ShipmentStatus } from "@/types"
+import type { Order, Shipment } from "@/types"
+import { cn } from "@/lib/utils"
+
+// ── Badge dédié pour les statuts de shipment ────
+
+const SHIPMENT_STATUS_CONFIG: Record<
+  ShipmentStatus,
+  { label: string; className: string }
+> = {
+  [ShipmentStatus.PENDING]: {
+    label: "En préparation",
+    className: "bg-amber-50 text-amber-700 ring-amber-200",
+  },
+  [ShipmentStatus.SHIPPED]: {
+    label: "Expédié",
+    className: "bg-indigo-50 text-indigo-700 ring-indigo-200",
+  },
+  [ShipmentStatus.DELIVERED]: {
+    label: "Livré",
+    className: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+  },
+  [ShipmentStatus.CANCELLED]: {
+    label: "Annulé",
+    className: "bg-gray-50 text-gray-500 ring-gray-200",
+  },
+}
+
+function ShipmentStatusBadge({ status }: { status: ShipmentStatus }) {
+  const config = SHIPMENT_STATUS_CONFIG[status]
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset",
+        config.className,
+      )}
+    >
+      {config.label}
+    </span>
+  )
+}
+
+// ── Composant principal ─────────────────────────
 
 export function OrderDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const creditCardRef = useRef<CreditCardIconHandle>(null)
 
   const [order, setOrder] = useState<Order | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [isCancelling, setIsCancelling] = useState(false)
+  const [isPaying, setIsPaying] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -40,28 +85,30 @@ export function OrderDetailPage() {
     void loadOrder()
   }, [id])
 
-  // ── Annulation ──
+  // ── Payer une commande PENDING ──
 
-  const handleCancel = async () => {
+  const handlePay = async () => {
     if (!order) return
 
-    setIsCancelling(true)
+    setIsPaying(true)
     try {
-      const updated = await ordersService.cancelOrder(order.id)
-      setOrder(updated)
-      toast.success("Commande annulée")
+      const { checkoutUrl } = await paymentsService.createCheckoutSession({
+        orderId: order.id,
+      })
+
+      sessionStorage.setItem("art_shop_pending_order", order.id)
+      window.location.href = checkoutUrl
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Impossible d'annuler la commande"
+        error instanceof Error
+          ? error.message
+          : "Impossible de lancer le paiement"
       toast.error(message)
-    } finally {
-      setIsCancelling(false)
+      setIsPaying(false)
     }
   }
 
-  const canCancel =
-    order?.status === OrderStatus.PENDING ||
-    order?.status === OrderStatus.CONFIRMED
+  const isPending = order?.status === OrderStatus.PENDING
 
   // ── Loading ──
 
@@ -91,16 +138,16 @@ export function OrderDetailPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <button
-            onClick={() => navigate("/commandes")}
-            className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 transition-colors mb-4"
-          >
-            <ArrowLeft size={16} />
-            Mes commandes
-          </button>
+      <div>
+        <button
+          onClick={() => navigate("/commandes")}
+          className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 cursor-pointer transition-colors mb-4"
+        >
+          <ArrowLeft size={16} />
+          Mes commandes
+        </button>
 
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-semibold text-gray-900">
               {order.orderNumber}
@@ -108,29 +155,48 @@ export function OrderDetailPage() {
             <OrderStatusBadge status={order.status} />
           </div>
 
-          <p className="mt-1 text-sm text-gray-500">
-            Passée le{" "}
-            {new Date(order.createdAt).toLocaleDateString("fr-FR", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
-          </p>
+          {/* Bouton payer si PENDING */}
+          {isPending && (
+            <Button
+              size="lg"
+              onClick={() => void handlePay()}
+              onMouseEnter={() => creditCardRef.current?.startAnimation()}
+              onMouseLeave={() => creditCardRef.current?.stopAnimation()}
+              isLoading={isPaying}
+              disabled={isPaying}
+            >
+              {!isPaying && (
+                <CreditCardIcon ref={creditCardRef} size={16} />
+              )}
+              Payer {order.total.toFixed(2)} €
+            </Button>
+          )}
         </div>
 
-        {canCancel && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => void handleCancel()}
-            isLoading={isCancelling}
-            disabled={isCancelling}
-            className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
-          >
-            Annuler
-          </Button>
-        )}
+        <p className="mt-1 text-sm text-gray-500">
+          Passée le{" "}
+          {new Date(order.createdAt).toLocaleDateString("fr-FR", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })}
+        </p>
       </div>
+
+      {/* Alerte paiement en attente */}
+      {isPending && (
+        <div className="mt-6 flex items-start gap-3 rounded-xl bg-amber-50 p-4">
+          <CreditCardIcon size={20} className="mt-0.5 shrink-0 text-amber-500" />
+          <div>
+            <p className="text-sm font-medium text-amber-800">
+              Paiement en attente
+            </p>
+            <p className="mt-0.5 text-xs text-amber-600">
+              Cette commande n'a pas encore été payée. Cliquez sur le bouton ci-dessus pour finaliser votre achat.
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
         {/* Colonne principale */}
@@ -192,7 +258,7 @@ export function OrderDetailPage() {
               </div>
 
               <div className="space-y-4">
-                {order.shipments.map((shipment) => (
+                {order.shipments.map((shipment: Shipment) => (
                   <div
                     key={shipment.id}
                     className="rounded-xl bg-gray-50 p-4"
@@ -201,9 +267,7 @@ export function OrderDetailPage() {
                       <p className="text-sm font-medium text-gray-900">
                         {shipment.carrier}
                       </p>
-                      <OrderStatusBadge
-                        status={shipment.status as OrderStatus}
-                      />
+                      <ShipmentStatusBadge status={shipment.status} />
                     </div>
 
                     {shipment.trackingNumber && (
@@ -215,7 +279,7 @@ export function OrderDetailPage() {
                           </span>
                         </p>
                         <a
-                          href={`https://www.laposte.fr/outils/suivre-vos-envois?code=${shipment.trackingNumber}`}
+                          href={getTrackingUrl(shipment.carrier, shipment.trackingNumber)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -288,6 +352,33 @@ export function OrderDetailPage() {
       </div>
     </div>
   )
+}
+
+// ── URL de tracking par transporteur ────────────
+
+function getTrackingUrl(carrier: string, trackingNumber: string): string {
+  const carrierLower = carrier.toLowerCase()
+
+  if (carrierLower.includes("colissimo") || carrierLower.includes("poste")) {
+    return `https://www.laposte.fr/outils/suivre-vos-envois?code=${trackingNumber}`
+  }
+  if (carrierLower.includes("chronopost")) {
+    return `https://www.chronopost.fr/tracking-no-cms/suivi-page?listeNumerosLT=${trackingNumber}`
+  }
+  if (carrierLower.includes("ups")) {
+    return `https://www.ups.com/track?tracknum=${trackingNumber}`
+  }
+  if (carrierLower.includes("dhl")) {
+    return `https://www.dhl.com/fr-fr/home/suivi.html?tracking-id=${trackingNumber}`
+  }
+  if (carrierLower.includes("fedex")) {
+    return `https://www.fedex.com/fedextrack/?trknbr=${trackingNumber}`
+  }
+  if (carrierLower.includes("mondial relay") || carrierLower.includes("mondial")) {
+    return `https://www.mondialrelay.fr/suivi-de-colis?numeroExpedition=${trackingNumber}`
+  }
+
+  return `https://www.google.com/search?q=${encodeURIComponent(carrier)}+suivi+${trackingNumber}`
 }
 
 // ── Skeleton ────────────────────────────────────

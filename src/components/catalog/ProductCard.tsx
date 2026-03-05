@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import TiltedCard from '@/components/ui/TiltedCard'
@@ -33,25 +32,10 @@ export function ProductCard({
   className,
 }: ProductCardProps) {
   const navigate = useNavigate()
-  const [imgError, setImgError] = useState(false)
 
   const imageUrl = primaryImage?.urls.medium ?? primaryImage?.url ?? null
 
   //  Contenu image (passé à TiltedCard) 
-  const imageContent =  imageUrl && !imgError ? (
-      <img
-        src={imageUrl}
-        alt={primaryImage?.altText ?? product.name}
-        className="h-full w-full object-cover rounded-[15px]"
-        onError={() => setImgError(true)}
-      />
-    ) : (
-      <div className="flex h-full w-full items-center justify-center rounded-[15px] bg-gray-50">
-        <span className="text-xs text-gray-300 uppercase tracking-widest">
-          Sans image
-        </span>
-      </div>
-    )
 
   //  Badge "Coup de cœur" (overlay TiltedCard) 
   const overlayBadge = product.featured ? (

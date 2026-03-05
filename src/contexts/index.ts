@@ -1,3 +1,3 @@
 export * from "./AuthContext";
-export * from "./CartContext";
+export * from "./cartContext";
 export * from "./CartProvider";

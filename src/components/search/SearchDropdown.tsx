@@ -89,7 +89,7 @@ function buildResults(products: Product[], query: string): SearchResult[] {
     }
 
     for (const tag of product.tags) {
-      if (!seenTags.has(tag.id) && matches(tag.name, query)) {
+      if (!seenTags.has(tag.id) && tag.name && matches(tag.name, query)) {
         seenTags.add(tag.id)
         results.push({
           kind: 'tag',
