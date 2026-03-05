@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { getPublishedProducts } from '@/services/products.service'
 import type { Product } from '@/types'
 
-// ── Types internes ───────────────────────────────────────
+//  Types internes 
 
 type ResultKind = 'product' | 'category' | 'subcategory' | 'tag'
 
@@ -22,7 +22,7 @@ const KIND_LABELS: Record<ResultKind, string> = {
   tag: 'Tags',
 }
 
-// ── Helpers ──────────────────────────────────────────────
+//  Helpers
 
 function normalize(str: string): string {
   return str
@@ -35,7 +35,7 @@ function matches(value: string, query: string): boolean {
   return normalize(value).includes(normalize(query))
 }
 
-// ── Cache module-level (survit aux re-renders) ───────────
+//  Cache module-level (survit aux re-renders) ─
 let cachedProducts: Product[] | null = null
 
 async function getProductsWithCache(): Promise<Product[]> {
@@ -103,7 +103,7 @@ function buildResults(products: Product[], query: string): SearchResult[] {
   return results.slice(0, 12)
 }
 
-// ── Composant ────────────────────────────────────────────
+//  Composant
 
 interface SearchDropdownProps {
   query: string

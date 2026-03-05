@@ -67,7 +67,7 @@ export function Header({ forceTransparent = false }: HeaderProps) {
       >
         <div className="flex h-14 items-center justify-between px-4 sm:px-6">
 
-          {/* ── Gauche : Menu ── */}
+          {/*  Gauche : Menu  */}
           <div className="flex items-center">
             <SideMenu
               items={menuItems}
@@ -79,7 +79,7 @@ export function Header({ forceTransparent = false }: HeaderProps) {
             />
           </div>
 
-          {/* ── Centre : Logo ── */}
+          {/*  Centre : Logo  */}
           <Link
             to="/"
             className={cn(
@@ -92,10 +92,10 @@ export function Header({ forceTransparent = false }: HeaderProps) {
             Art Shop
           </Link>
 
-          {/* ── Droite : Icônes ── */}
+          {/*  Droite : Icônes  */}
           <div className="flex items-center gap-1" style={{ color: textColor }}>
 
-            {/* ── Recherche ── */}
+            {/*  Recherche  */}
             <div className="relative">
               <AnimatePresence mode="wait">
                 {isSearchOpen ? (
@@ -153,7 +153,7 @@ export function Header({ forceTransparent = false }: HeaderProps) {
               </AnimatePresence>
             </div>
 
-            {/* ── Profil ── */}
+            {/*  Profil  */}
             <Link
               to={isAuthenticated ? '/profil' : '/login'}
               className="rounded-full p-2 transition-colors duration-200 hover:bg-black/5"
@@ -162,7 +162,7 @@ export function Header({ forceTransparent = false }: HeaderProps) {
               <UserIcon size={18} />
             </Link>
 
-            {/* ── Favoris (desktop uniquement) ── */}
+            {/*  Favoris (desktop uniquement)  */}
             <Link
               to="/favoris"
               className="hidden rounded-full p-2 transition-colors duration-200 hover:bg-black/5 sm:flex"
@@ -171,7 +171,7 @@ export function Header({ forceTransparent = false }: HeaderProps) {
               <HeartIcon size={18} />
             </Link>
 
-            {/* ── Panier avec badge ── */}
+            {/*  Panier avec badge  */}
             <Link
               to="/panier"
               className="relative rounded-full p-2 transition-colors duration-200 hover:bg-black/5"

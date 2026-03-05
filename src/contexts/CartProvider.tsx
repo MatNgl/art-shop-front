@@ -23,7 +23,7 @@ export function CartProvider({ children }: CartProviderProps) {
   const itemCount = cart?.itemCount ?? 0
   const total = cart?.total ?? 0
 
-  // ── Rafraîchir le panier ──────────────────────
+  //  Rafraîchir le panier 
   const refreshCart = useCallback(async () => {
     const token = localStorage.getItem(TOKEN_KEY)
     if (!token) {
@@ -39,19 +39,19 @@ export function CartProvider({ children }: CartProviderProps) {
     }
   }, [])
 
-  // ── Vider le state local (après paiement) ─────
+  //  Vider le state local (après paiement) ─
   const resetCart = useCallback(() => {
     setCart(null)
   }, [])
 
-  // ── Synchro avec l'état d'authentification ────
+  //  Synchro avec l'état d'authentification 
   useEffect(() => {
     if (!authLoading) {
       void refreshCart()
     }
   }, [isAuthenticated, authLoading, refreshCart])
 
-  // ── Synchro multi-onglets (StorageEvent) ──────
+  //  Synchro multi-onglets (StorageEvent) 
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === TOKEN_KEY) {
@@ -63,7 +63,7 @@ export function CartProvider({ children }: CartProviderProps) {
     return () => window.removeEventListener('storage', handleStorageChange)
   }, [refreshCart])
 
-  // ── Ajouter un article ────────────────────────
+  //  Ajouter un article 
   const addItem = useCallback(
     async (payload: AddCartItemPayload) => {
       setIsLoading(true)
@@ -90,7 +90,7 @@ export function CartProvider({ children }: CartProviderProps) {
     [],
   )
 
-  // ── Modifier la quantité ──────────────────────
+  //  Modifier la quantité 
   const updateQuantity = useCallback(
     async (itemId: string, quantity: number) => {
       setIsLoading(true)
@@ -111,7 +111,7 @@ export function CartProvider({ children }: CartProviderProps) {
     [],
   )
 
-  // ── Supprimer un article ──────────────────────
+  //  Supprimer un article 
   const removeItem = useCallback(
     async (itemId: string) => {
       setIsLoading(true)
@@ -131,7 +131,7 @@ export function CartProvider({ children }: CartProviderProps) {
     [],
   )
 
-  // ── Vider le panier ───────────────────────────
+  //  Vider le panier ─
   const clearCart = useCallback(async () => {
     setIsLoading(true)
     try {

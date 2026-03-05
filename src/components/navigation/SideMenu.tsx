@@ -448,7 +448,7 @@ export function SideMenu({
         } as React.CSSProperties}
         aria-hidden={!open}
       >
-        {/* ── Header du panel avec bouton Fermer ── */}
+        {/*  Header du panel avec bouton Fermer  */}
         <div className="h-20 flex items-center justify-between px-8 border-b border-gray-100">
           <span className="text-xs font-semibold text-gray-400 uppercase tracking-[0.2em]">
             Navigation
@@ -545,7 +545,7 @@ export function SideMenu({
                     >
                       <div className="pl-4 pb-4 pt-2 space-y-6 border-l-2 border-gray-100 ml-1">
 
-                        {/* ── CATÉGORIES ── */}
+                        {/*  CATÉGORIES  */}
                         <div>
                           <button
                             onClick={() => handleNavigation('/galerie')}
@@ -608,7 +608,7 @@ export function SideMenu({
                           )}
                         </div>
 
-                        {/* ── FORMATS ── */}
+                        {/*  FORMATS  */}
                         <div>
                           <button
                             onClick={() => handleNavigation('/galerie?view=formats')}

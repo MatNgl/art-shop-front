@@ -58,7 +58,7 @@ export const router = createBrowserRouter([
         element: <ProfilePage />,
       },
 
-      // ── Tunnel de commande ──
+      //  Tunnel de commande 
       {
         path: '/checkout',
         element: <CheckoutPage />,
@@ -68,7 +68,7 @@ export const router = createBrowserRouter([
         element: <OrderConfirmationPage />,
       },
 
-      // ── Suivi commandes ──
+      //  Suivi commandes 
       {
         path: '/commandes',
         element: <OrdersPage />,
@@ -78,7 +78,7 @@ export const router = createBrowserRouter([
         element: <OrderDetailPage />,
       },
 
-      // ── Pages légales ──
+      //  Pages légales 
       {
         path: '/mentions-legales',
         element: <div className="pt-20 p-8">Mentions légales (à créer)</div>,

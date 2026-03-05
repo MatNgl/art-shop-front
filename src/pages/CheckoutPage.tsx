@@ -23,11 +23,11 @@ import * as paymentsService from "@/services/payments.service"
 import type { Address, Order } from "@/types"
 import type { AddressFormData } from "@/schemas"
 
-// ── Clé sessionStorage pour la commande en cours ──
+//  Clé sessionStorage pour la commande en cours 
 
 const PENDING_ORDER_KEY = "art_shop_pending_order"
 
-// ── Configuration du stepper ────────────────────
+//  Configuration du stepper 
 
 const STEPS = [
   { label: "Récapitulatif" },
@@ -35,7 +35,7 @@ const STEPS = [
   { label: "Paiement" },
 ]
 
-// ── Composant ───────────────────────────────────
+//  Composant
 
 export function CheckoutPage() {
   const navigate = useNavigate()
@@ -59,7 +59,7 @@ export function CheckoutPage() {
   const [pendingOrderLoading, setPendingOrderLoading] = useState(false)
   const [isRetrying, setIsRetrying] = useState(false)
 
-  // ── Synchroniser l'étape avec l'URL ──
+  //  Synchroniser l'étape avec l'URL 
 
   useEffect(() => {
     if (!pendingOrder) {
@@ -67,7 +67,7 @@ export function CheckoutPage() {
     }
   }, [currentStep, setSearchParams, pendingOrder])
 
-  // ── Détection d'une commande en attente (retour depuis Stripe) ──
+  //  Détection d'une commande en attente (retour depuis Stripe) 
 
   useEffect(() => {
     const cancelled = searchParams.get("cancelled")
@@ -91,7 +91,7 @@ export function CheckoutPage() {
     }
   }, [searchParams])
 
-  // ── Calculs dérivés ──
+  //  Calculs dérivés 
 
   const items = cart?.items ?? []
   const subtotal = items.reduce((sum, item) => sum + item.lineTotal, 0)
@@ -99,7 +99,7 @@ export function CheckoutPage() {
 
   const selectedAddress = addresses.find((a) => a.id === selectedAddressId) ?? null
 
-  // ── Chargement des adresses (étape 2) ──
+  //  Chargement des adresses (étape 2) 
 
   const loadAddresses = useCallback(async () => {
     setAddressesLoading(true)
@@ -126,7 +126,7 @@ export function CheckoutPage() {
     }
   }, [currentStep, addresses.length, loadAddresses, pendingOrder])
 
-  // ── Callback ajout adresse ──
+  //  Callback ajout adresse 
 
   const handleAddressSubmit = async (data: AddressFormData) => {
     setIsCreatingAddress(true)
@@ -147,7 +147,7 @@ export function CheckoutPage() {
     }
   }
 
-  // ── Navigation stepper ──
+  //  Navigation stepper 
 
   const goNext = () => {
     if (currentStep === 1 && items.length === 0) {
@@ -171,7 +171,7 @@ export function CheckoutPage() {
     }
   }
 
-  // ── Paiement (étape 3) ──
+  //  Paiement (étape 3) 
 
   const handlePayment = async () => {
     if (!selectedAddressId) return
@@ -199,7 +199,7 @@ export function CheckoutPage() {
     }
   }
 
-  // ── Relancer le paiement d'une commande en attente ──
+  //  Relancer le paiement d'une commande en attente 
 
   const handleRetryPayment = async () => {
     if (!pendingOrder) return
@@ -226,7 +226,7 @@ export function CheckoutPage() {
     }
   }
 
-  // ── Loading commande en attente ──
+  //  Loading commande en attente 
 
   if (pendingOrderLoading) {
     return (
@@ -248,7 +248,7 @@ export function CheckoutPage() {
     )
   }
 
-  // ── Commande en attente (retour Stripe) ──
+  //  Commande en attente (retour Stripe) 
 
   if (pendingOrder) {
     const pendingItems = pendingOrder.items.map(fromOrderItem)
@@ -338,7 +338,7 @@ export function CheckoutPage() {
     )
   }
 
-  // ── Panier vide ──
+  //  Panier vide 
 
   if (!cartLoading && items.length === 0 && currentStep === 1) {
     return (
@@ -362,11 +362,11 @@ export function CheckoutPage() {
     )
   }
 
-  // ── Items mappés pour le stepper ──
+  //  Items mappés pour le stepper 
 
   const summaryItems = items.map(fromCartItem)
 
-  // ── Rendu normal ──
+  //  Rendu normal 
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">

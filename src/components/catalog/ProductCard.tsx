@@ -49,7 +49,7 @@ export function ProductCard({
       className={cn('group flex flex-col gap-3 cursor-pointer', className)}
       onClick={() => navigate(`/oeuvre/${product.slug}`)}
     >
-      {/* ── Image avec effet tilt ── */}
+      {/*  Image avec effet tilt  */}
       <div className="aspect-3/4 w-full">
         <TiltedCard
           imageSrc={imageUrl ?? ''}

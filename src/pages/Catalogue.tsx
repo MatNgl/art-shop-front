@@ -17,7 +17,7 @@ import type {
   CategoryWithSubcategories,
 } from '@/types'
 
-// ── Types locaux ────────────────────────────────
+//  Types locaux 
 
 type PrimaryImageMap = Record<string, ProductImage>
 type MinPriceMap = Record<string, number>
@@ -25,7 +25,7 @@ type MinPriceMap = Record<string, number>
 // Délai minimum d'affichage du skeleton (ms)
 const MIN_LOADING_MS = 600
 
-// ── Helper ──────────────────────────────────────
+//  Helper 
 
 function computeMinPrice(variants: ProductVariant[]): number | null {
   const available = variants.filter((v) => v.status === 'AVAILABLE')
@@ -33,7 +33,7 @@ function computeMinPrice(variants: ProductVariant[]): number | null {
   return Math.min(...available.map((v) => Number(v.price)))
 }
 
-// ── Page Catalogue ──────────────────────────────
+//  Page Catalogue 
 
 export default function Catalogue() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -52,7 +52,7 @@ export default function Catalogue() {
     activeCategory,
     activeSubcategory,
   })
-  // ── Chargement initial ──────────────────────────
+  //  Chargement initial 
   useEffect(() => {
     let cancelled = false
 
@@ -101,7 +101,7 @@ export default function Catalogue() {
     return () => { cancelled = true }
   }, [])
 
-  // ── Chargement images principales ───────────────
+  //  Chargement images principales ─
   async function loadPrimaryImages(
     prods: Product[],
     cancelled: boolean,
@@ -137,7 +137,7 @@ export default function Catalogue() {
     }
   }
 
-  // ── Chargement prix minimum ─────────────────────
+  //  Chargement prix minimum ─
   async function loadMinPrices(
     prods: Product[],
     cancelled: boolean,
@@ -163,7 +163,7 @@ export default function Catalogue() {
     setMinPrices(map)
   }
 
-  // ── Filtrage client ─────────────────────────────
+  //  Filtrage client ─
   const filteredProducts = useMemo(() => {
     if (!activeCategory && !activeSubcategory) return products
 
@@ -182,7 +182,7 @@ export default function Catalogue() {
     })
   }, [products, activeCategory, activeSubcategory])
 
-  // ── Rendu ──────────────────────────────────────
+  //  Rendu 
   return (
     <main className="min-h-screen bg-white">
       <section className="px-6 pb-8 pt-16 md:px-12 lg:px-20">

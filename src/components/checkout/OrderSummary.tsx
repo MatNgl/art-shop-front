@@ -1,6 +1,6 @@
 import type { CartItem, OrderItem } from "@/types"
 
-// ── Type normalisé pour l'affichage ─────────────
+//  Type normalisé pour l'affichage
 
 interface SummaryItem {
   id: string
@@ -17,7 +17,7 @@ interface OrderSummaryProps {
   total: number
 }
 
-// ── Mappers ─────────────────────────────────────
+//  Mappers
 
 /** Convertit un CartItem (panier) en SummaryItem */
 export function fromCartItem(item: CartItem): SummaryItem {
@@ -45,8 +45,7 @@ export function fromOrderItem(item: OrderItem): SummaryItem {
   }
 }
 
-// ── Composant ───────────────────────────────────
-
+//  Composant
 /**
  * Récapitulatif de commande normalisé.
  * Accepte des SummaryItem[] — utiliser fromCartItem() ou fromOrderItem()

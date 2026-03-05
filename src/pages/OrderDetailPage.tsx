@@ -19,7 +19,7 @@ import { OrderStatus, ShipmentStatus } from "@/types"
 import type { Order, Shipment } from "@/types"
 import { cn } from "@/lib/utils"
 
-// ── Badge dédié pour les statuts de shipment ────
+//  Badge dédié pour les statuts de shipment 
 
 const SHIPMENT_STATUS_CONFIG: Record<
   ShipmentStatus,
@@ -57,7 +57,7 @@ function ShipmentStatusBadge({ status }: { status: ShipmentStatus }) {
   )
 }
 
-// ── Composant principal ─────────────────────────
+//  Composant principal ─
 
 export function OrderDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -85,7 +85,7 @@ export function OrderDetailPage() {
     void loadOrder()
   }, [id])
 
-  // ── Payer une commande PENDING ──
+  //  Payer une commande PENDING 
 
   const handlePay = async () => {
     if (!order) return
@@ -110,13 +110,13 @@ export function OrderDetailPage() {
 
   const isPending = order?.status === OrderStatus.PENDING
 
-  // ── Loading ──
+  //  Loading 
 
   if (isLoading) {
     return <OrderDetailSkeleton />
   }
 
-  // ── Erreur ──
+  //  Erreur 
 
   if (!order) {
     return (
@@ -133,7 +133,7 @@ export function OrderDetailPage() {
     )
   }
 
-  // ── Rendu ──
+  //  Rendu 
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
@@ -354,7 +354,7 @@ export function OrderDetailPage() {
   )
 }
 
-// ── URL de tracking par transporteur ────────────
+//  URL de tracking par transporteur 
 
 function getTrackingUrl(carrier: string, trackingNumber: string): string {
   const carrierLower = carrier.toLowerCase()
@@ -381,7 +381,7 @@ function getTrackingUrl(carrier: string, trackingNumber: string): string {
   return `https://www.google.com/search?q=${encodeURIComponent(carrier)}+suivi+${trackingNumber}`
 }
 
-// ── Skeleton ────────────────────────────────────
+//  Skeleton 
 
 function OrderDetailSkeleton() {
   return (

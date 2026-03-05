@@ -16,7 +16,7 @@ export function VariantSelector({
 
   return (
     <div className="space-y-4">
-      {/* ── Format ── */}
+      {/*  Format  */}
       <div>
         <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-gray-400">
           Format
@@ -55,7 +55,7 @@ export function VariantSelector({
         </div>
       </div>
 
-      {/* ── Prix et disponibilité ── */}
+      {/*  Prix et disponibilité  */}
       {selectedVariant && (
         <div className="flex items-center gap-3">
           <span className="text-2xl font-semibold text-gray-900">

@@ -18,14 +18,14 @@ import type {
   Subcategory,
 } from '@/types'
 
-// ── Types locaux ────────────────────────────────
+//  Types locaux 
 
 type PrimaryImageMap = Record<string, ProductImage>
 type MinPriceMap = Record<string, number>
 
 const MIN_LOADING_MS = 600
 
-// ── Helpers ─────────────────────────────────────
+//  Helpers
 
 function computeMinPrice(variants: ProductVariant[]): number | null {
   const available = variants.filter((v) => v.status === 'AVAILABLE')
@@ -33,7 +33,7 @@ function computeMinPrice(variants: ProductVariant[]): number | null {
   return Math.min(...available.map((v) => Number(v.price)))
 }
 
-// ── Page ─────────────────────────────────────────
+//  Page 
 
 export default function CategoryPage() {
   const { slug } = useParams<{ slug: string }>()
@@ -48,7 +48,7 @@ export default function CategoryPage() {
 
   const activeSubcategory = searchParams.get('sous-categorie')
 
-  // ── Chargement ──────────────────────────────────
+  //  Chargement 
   useEffect(() => {
     let cancelled = false
 
@@ -104,7 +104,7 @@ export default function CategoryPage() {
     return () => { cancelled = true }
   }, [slug])
 
-  // ── Chargement images ───────────────────────────
+  //  Chargement images ─
   async function loadPrimaryImages(
     prods: Product[],
     cancelled: boolean,
@@ -130,7 +130,7 @@ export default function CategoryPage() {
     setPrimaryImages(map)
   }
 
-  // ── Chargement prix ─────────────────────────────
+  //  Chargement prix
   async function loadMinPrices(
     prods: Product[],
     cancelled: boolean,
@@ -156,7 +156,7 @@ export default function CategoryPage() {
     setMinPrices(map)
   }
 
-  // ── Filtrage par sous-catégorie ─────────────────
+  //  Filtrage par sous-catégorie
   const filteredProducts = useMemo(() => {
     if (!activeSubcategory) return allProducts
 
@@ -165,7 +165,7 @@ export default function CategoryPage() {
     )
   }, [allProducts, activeSubcategory])
 
-  // ── Breadcrumb ──────────────────────────────────
+  //  Breadcrumb 
   const breadcrumbItems = useMemo<BreadcrumbItem[]>(() => {
     const items: BreadcrumbItem[] = [
       { label: 'Accueil', href: '/' },
@@ -189,7 +189,7 @@ export default function CategoryPage() {
     return items
   }, [category, activeSubcategory])
 
-  // ── Not Found ───────────────────────────────────
+  //  Not Found ─
   if (!loading && notFound) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-white px-6">
@@ -207,7 +207,7 @@ export default function CategoryPage() {
     )
   }
 
-  // ── Rendu ───────────────────────────────────────
+  //  Rendu 
   return (
     <main className="min-h-screen bg-white">
       {/* Header catégorie */}

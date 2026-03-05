@@ -1,6 +1,6 @@
 // Types frontend — alignés sur les DTOs backend
 
-// ── Images (Cloudinary) ──────────────────────
+//  Images (Cloudinary) 
 
 /** URLs générées par Cloudinary pour toutes les tailles */
 export interface ImageUrls {
@@ -43,7 +43,7 @@ export interface ProductVariantImage {
   createdById: string;
 }
 
-// ── Tags ─────────────────────────────────────
+//  Tags
 
 /**
  * ⚠️ Le TagResponseDto backend retourne : id, slug, createdAt, updatedAt
@@ -58,7 +58,7 @@ export interface Tag {
   updatedAt?: string;
 }
 
-// ── Formats ──────────────────────────────────
+//  Formats 
 
 export interface Format {
   id: string;
@@ -70,7 +70,7 @@ export interface Format {
   updatedAt: string;
 }
 
-// ── Matériaux ────────────────────────────────
+//  Matériaux 
 
 export interface Material {
   id: string;
@@ -81,7 +81,7 @@ export interface Material {
   updatedAt: string;
 }
 
-// ── Variantes ────────────────────────────────
+//  Variantes 
 
 export type ProductVariantStatus =
   | "AVAILABLE"
@@ -100,7 +100,7 @@ export interface ProductVariant {
   updatedAt: string;
 }
 
-// ── Produits ─────────────────────────────────
+//  Produits
 
 export type ProductStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 
@@ -122,7 +122,7 @@ export interface Product {
   subcategories?: Subcategory[];
 }
 
-// ── Catégories ───────────────────────────────
+//  Catégories 
 
 export interface Category {
   id: string;

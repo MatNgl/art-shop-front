@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import type { BreadcrumbItem } from "@/components/navigation/Breadcrumb";
 import type { CategoryWithSubcategories, Product } from "@/types";
 
-// ── Breadcrumb pour la page Catalogue ───────────
+//  Breadcrumb pour la page Catalogue
 
 interface CatalogueBreadcrumbParams {
   categories: CategoryWithSubcategories[];
@@ -70,7 +70,7 @@ export function useCatalogueBreadcrumb({
   }, [categories, activeCategory, activeSubcategory]);
 }
 
-// ── Breadcrumb pour la page détail produit ──────
+//  Breadcrumb pour la page détail produit 
 
 interface ProductDetailBreadcrumbParams {
   product: Product | null;

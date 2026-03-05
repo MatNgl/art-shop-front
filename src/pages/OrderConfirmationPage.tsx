@@ -42,7 +42,7 @@ export function OrderConfirmationPage() {
     void loadOrder()
   }, [id, navigate, resetCart])
 
-  // ── Loading ──
+  //  Loading 
 
   if (isLoading) {
     return (
@@ -55,7 +55,7 @@ export function OrderConfirmationPage() {
     )
   }
 
-  // ── Erreur ──
+  //  Erreur 
 
   if (error || !order) {
     return (
@@ -72,7 +72,7 @@ export function OrderConfirmationPage() {
     )
   }
 
-  // ── Confirmation ──
+  //  Confirmation 
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-24">

@@ -14,7 +14,7 @@ import {
 } from '@/services/products.service'
 import type { Product, ProductVariant, ProductImage } from '@/types'
 
-// ── Skeleton ─────────────────────────────────────────────
+//  Skeleton 
 function ProductDetailSkeleton() {
   return (
     <div className="mx-auto max-w-5xl animate-pulse px-6 py-12 lg:px-12">
@@ -47,7 +47,7 @@ function ProductDetailSkeleton() {
   )
 }
 
-// ── Page ──────────────────────────────────────────────────
+//  Pages
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
@@ -173,7 +173,7 @@ export default function ProductDetail() {
 
   return (
     <main className="min-h-screen bg-white">
-      {/* ── Bouton retour ── */}
+      {/*  Bouton retour  */}
       <div className="mx-auto max-w-5xl px-6 pt-8 lg:px-12">
         <button
           onClick={() => navigate('/galerie')}
@@ -184,11 +184,11 @@ export default function ProductDetail() {
         </button>
       </div>
 
-      {/* ── Contenu principal ── */}
+      {/*  Contenu principal  */}
       <div className="mx-auto max-w-5xl px-6 py-8 lg:px-12">
         <Breadcrumb items={breadcrumbItems} className="mb-6" />
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
-          {/* ── Colonne image ── */}
+          {/*  Colonne image  */}
           <div className="space-y-4">
             <div className="relative overflow-hidden rounded-2xl bg-gray-50">
               <div className="aspect-4/5">
@@ -255,7 +255,7 @@ export default function ProductDetail() {
             )}
           </div>
 
-          {/* ── Colonne infos ── */}
+          {/*  Colonne infos  */}
           <div className="flex flex-col gap-6 lg:pt-2">
             {product.tags.length > 0 && (
               <div className="flex flex-wrap gap-2">
@@ -325,7 +325,7 @@ export default function ProductDetail() {
         </div>
       </div>
 
-      {/* ── Produits similaires ── */}
+      {/*  Produits similaires  */}
       {relatedProducts.length > 0 && (
         <section className="mx-auto max-w-5xl px-6 py-16 lg:px-12">
           <div className="mb-8 border-t border-gray-100 pt-10">

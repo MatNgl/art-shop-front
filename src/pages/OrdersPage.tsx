@@ -99,7 +99,7 @@ export function OrdersPage() {
   )
 }
 
-// ── Skeleton ────────────────────────────────────
+//  Skeleton 
 
 function OrderCardSkeleton() {
   return (

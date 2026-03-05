@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-// ── Types ───────────────────────────────────────
+//  Types 
 
 export interface BreadcrumbItem {
   /** Texte affiché */
@@ -16,7 +16,7 @@ interface BreadcrumbProps {
   className?: string
 }
 
-// ── Composant ───────────────────────────────────
+//  Composant
 
 /**
  * Fil d'Ariane accessible et réutilisable.

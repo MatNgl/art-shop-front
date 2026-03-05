@@ -44,7 +44,7 @@ export default function ProfilePage() {
   const [orders, setOrders] = useState<OrderSummary[]>([])
   const [isLoadingOrders, setIsLoadingOrders] = useState(true)
 
-  // ── Chargement des données ──
+  //  Chargement des données 
 
   const loadAddresses = useCallback(async () => {
     try {
@@ -75,7 +75,7 @@ export default function ProfilePage() {
     }
   }, [isAuthenticated, loadAddresses, loadOrders])
 
-  // ── Handlers adresses ──
+  //  Handlers adresses 
 
   const handleSubmitAddress = async (data: AddressFormData) => {
     setIsSubmitting(true)
@@ -144,7 +144,7 @@ export default function ProfilePage() {
     navigate('/')
   }
 
-  // ── Loading auth ──
+  //  Loading auth 
 
   if (authLoading) {
     return (
@@ -159,7 +159,7 @@ export default function ProfilePage() {
     )
   }
 
-  // ── Non connecté ──
+  //  Non connecté 
 
   if (!isAuthenticated || !user || user.role.code === 'GUEST') {
     return (
@@ -211,7 +211,7 @@ export default function ProfilePage() {
     )
   }
 
-  // ── Connecté ──
+  //  Connecté 
 
   // 3 dernières commandes pour l'aperçu
   const recentOrders = orders.slice(0, 3)
@@ -220,7 +220,7 @@ export default function ProfilePage() {
     <main className="min-h-screen pt-28 pb-16 px-6">
       <div className="max-w-2xl mx-auto space-y-10">
 
-        {/* ── Section Profil ── */}
+        {/*  Section Profil  */}
         <section>
           <div className="flex items-center gap-2 mb-6">
             <User size={18} className="text-gray-400" />
@@ -273,7 +273,7 @@ export default function ProfilePage() {
           </div>
         </section>
 
-        {/* ── Section Commandes ── */}
+        {/*  Section Commandes  */}
         <section>
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
@@ -372,7 +372,7 @@ export default function ProfilePage() {
           )}
         </section>
 
-        {/* ── Section Adresses ── */}
+        {/*  Section Adresses  */}
         <section>
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
