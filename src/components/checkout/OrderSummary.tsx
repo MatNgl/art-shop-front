@@ -1,14 +1,56 @@
-import type { CartItem } from "@/types"
+import type { CartItem, OrderItem } from "@/types"
+
+// ── Type normalisé pour l'affichage ─────────────
+
+interface SummaryItem {
+  id: string
+  title: string
+  detail: string
+  imageUrl: string | null
+  quantity: number
+  lineTotal: number
+}
 
 interface OrderSummaryProps {
-  items: CartItem[]
+  items: SummaryItem[]
   subtotal: number
   total: number
 }
 
+// ── Mappers ─────────────────────────────────────
+
+/** Convertit un CartItem (panier) en SummaryItem */
+export function fromCartItem(item: CartItem): SummaryItem {
+  return {
+    id: item.id,
+    title: item.productName,
+    detail: [item.formatName, item.materialName].filter(Boolean).join(" · "),
+    imageUrl: item.productImageUrl,
+    quantity: item.quantity,
+    lineTotal: item.lineTotal,
+  }
+}
+
+/** Convertit un OrderItem (commande) en SummaryItem */
+export function fromOrderItem(item: OrderItem): SummaryItem {
+  return {
+    id: item.id,
+    title: item.productTitleSnapshot,
+    detail: [item.variantSnapshot.formatName, item.variantSnapshot.material]
+      .filter(Boolean)
+      .join(" · "),
+    imageUrl: null,
+    quantity: item.quantity,
+    lineTotal: item.lineTotal,
+  }
+}
+
+// ── Composant ───────────────────────────────────
+
 /**
- * Récapitulatif de commande — affiché dans le stepper (étapes 1 et 3).
- * Reprend le style visuel de CartItemRow mais en lecture seule (sans contrôles quantité).
+ * Récapitulatif de commande normalisé.
+ * Accepte des SummaryItem[] — utiliser fromCartItem() ou fromOrderItem()
+ * pour convertir les données avant de les passer.
  */
 export function OrderSummary({ items, subtotal, total }: OrderSummaryProps) {
   return (
@@ -18,10 +60,10 @@ export function OrderSummary({ items, subtotal, total }: OrderSummaryProps) {
         {items.map((item) => (
           <div key={item.id} className="flex gap-4 py-5">
             {/* Miniature */}
-            {item.productImageUrl ? (
+            {item.imageUrl ? (
               <img
-                src={item.productImageUrl}
-                alt={item.productName}
+                src={item.imageUrl}
+                alt={item.title}
                 className="h-20 w-20 shrink-0 rounded-xl object-cover bg-gray-50"
               />
             ) : (
@@ -35,12 +77,11 @@ export function OrderSummary({ items, subtotal, total }: OrderSummaryProps) {
             {/* Détails */}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 line-clamp-1">
-                {item.productName}
+                {item.title}
               </p>
-              <p className="mt-0.5 text-xs text-gray-500">
-                {item.formatName}
-                {item.materialName ? ` · ${item.materialName}` : ""}
-              </p>
+              {item.detail && (
+                <p className="mt-0.5 text-xs text-gray-500">{item.detail}</p>
+              )}
               <p className="mt-1 text-xs text-gray-500">
                 Qté : {item.quantity}
               </p>

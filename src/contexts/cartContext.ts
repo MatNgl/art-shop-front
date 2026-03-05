@@ -11,6 +11,8 @@ export interface CartContextType {
   removeItem: (itemId: string) => Promise<void>;
   clearCart: () => Promise<void>;
   refreshCart: () => Promise<void>;
+  resetCart: () => void;
+
 }
 
 export const CartContext = createContext<CartContextType | null>(null);

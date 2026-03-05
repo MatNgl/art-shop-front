@@ -13,6 +13,8 @@ import {
   OrderSummarySkeleton,
   AddressSelector,
   AddressSelectorSkeleton,
+  fromCartItem,
+  fromOrderItem,
 } from "@/components/checkout"
 import { AddressForm } from "@/components/profile"
 import * as addressesService from "@/services/addresses.service"
@@ -41,7 +43,6 @@ export function CheckoutPage() {
   const { cart, isLoading: cartLoading, refreshCart } = useCart()
   const creditCardRef = useRef<CreditCardIconHandle>(null)
 
-  // Étape initiale depuis l'URL ou 1 par défaut
   const stepParam = Number(searchParams.get("step")) || 1
   const initialStep = stepParam >= 1 && stepParam <= 3 ? stepParam : 1
 
@@ -93,11 +94,8 @@ export function CheckoutPage() {
   // ── Calculs dérivés ──
 
   const items = cart?.items ?? []
-  const subtotal = items.reduce(
-    (sum, item) => sum + item.lineTotal,
-    0,
-  )
-  const total = subtotal // Promotions en V2
+  const subtotal = items.reduce((sum, item) => sum + item.lineTotal, 0)
+  const total = subtotal
 
   const selectedAddress = addresses.find((a) => a.id === selectedAddressId) ?? null
 
@@ -228,7 +226,7 @@ export function CheckoutPage() {
     }
   }
 
-  // ── Récupération commande en attente : loading ──
+  // ── Loading commande en attente ──
 
   if (pendingOrderLoading) {
     return (
@@ -250,9 +248,11 @@ export function CheckoutPage() {
     )
   }
 
-  // ── Récupération commande en attente : affichage étape 3 ──
+  // ── Commande en attente (retour Stripe) ──
 
   if (pendingOrder) {
+    const pendingItems = pendingOrder.items.map(fromOrderItem)
+
     return (
       <div className="mx-auto max-w-3xl px-4 py-12">
         <h1 className="text-2xl font-semibold text-gray-900">Finaliser la commande</h1>
@@ -262,7 +262,6 @@ export function CheckoutPage() {
         </div>
 
         <div className="rounded-2xl border border-gray-100 bg-white p-6 sm:p-8">
-          {/* Alerte */}
           <div className="mb-6 flex items-start gap-3 rounded-xl bg-amber-50 p-4">
             <AlertCircle size={20} className="mt-0.5 shrink-0 text-amber-500" />
             <div>
@@ -276,7 +275,6 @@ export function CheckoutPage() {
             </div>
           </div>
 
-          {/* Adresse de la commande */}
           <div className="mb-6 rounded-xl bg-gray-50 p-4">
             <p className="text-xs font-medium uppercase tracking-wider text-gray-400 mb-2">
               Livraison à
@@ -299,46 +297,17 @@ export function CheckoutPage() {
             </p>
           </div>
 
-          {/* Articles de la commande */}
-          <div className="divide-y divide-gray-100">
-            {pendingOrder.items.map((item) => (
-              <div key={item.id} className="flex gap-4 py-5">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 line-clamp-1">
-                    {item.productTitleSnapshot}
-                  </p>
-                  <p className="mt-0.5 text-xs text-gray-500">
-                    {item.variantSnapshot.formatName} · {item.variantSnapshot.material}
-                  </p>
-                  <p className="mt-1 text-xs text-gray-500">
-                    Qté : {item.quantity}
-                  </p>
-                </div>
-                <p className="shrink-0 text-sm font-medium text-gray-900">
-                  {item.lineTotal.toFixed(2)} €
-                </p>
-              </div>
-            ))}
-          </div>
-
-          {/* Totaux */}
-          <div className="mt-4 border-t border-gray-100 pt-4 space-y-2">
-            <div className="flex justify-between text-sm text-gray-500">
-              <span>Sous-total</span>
-              <span>{pendingOrder.subtotal.toFixed(2)} €</span>
-            </div>
-            <div className="flex justify-between text-base font-semibold text-gray-900 pt-2 border-t border-gray-100">
-              <span>Total</span>
-              <span>{pendingOrder.total.toFixed(2)} €</span>
-            </div>
-          </div>
+          <OrderSummary
+            items={pendingItems}
+            subtotal={pendingOrder.subtotal}
+            total={pendingOrder.total}
+          />
 
           <p className="mt-6 text-xs text-gray-400 text-center">
             Vous serez redirigé vers Stripe pour effectuer le paiement sécurisé.
           </p>
         </div>
 
-        {/* Navigation */}
         <div className="mt-6 flex items-center justify-between">
           <Button
             variant="ghost"
@@ -393,7 +362,11 @@ export function CheckoutPage() {
     )
   }
 
-  // ── Rendu normal du stepper ──
+  // ── Items mappés pour le stepper ──
+
+  const summaryItems = items.map(fromCartItem)
+
+  // ── Rendu normal ──
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
@@ -413,7 +386,6 @@ export function CheckoutPage() {
       </div>
 
       <div className="rounded-2xl border border-gray-100 bg-white p-6 sm:p-8">
-        {/* ÉTAPE 1 — Récapitulatif */}
         {currentStep === 1 && (
           <div>
             <div className="flex items-center gap-2 mb-6">
@@ -430,7 +402,7 @@ export function CheckoutPage() {
               <OrderSummarySkeleton />
             ) : (
               <OrderSummary
-                items={items}
+                items={summaryItems}
                 subtotal={subtotal}
                 total={total}
               />
@@ -438,7 +410,6 @@ export function CheckoutPage() {
           </div>
         )}
 
-        {/* ÉTAPE 2 — Adresse de livraison */}
         {currentStep === 2 && (
           <div>
             <div className="flex items-center gap-2 mb-6">
@@ -468,7 +439,6 @@ export function CheckoutPage() {
           </div>
         )}
 
-        {/* ÉTAPE 3 — Paiement */}
         {currentStep === 3 && (
           <div>
             <div className="flex items-center gap-2 mb-6">
@@ -502,7 +472,7 @@ export function CheckoutPage() {
             )}
 
             <OrderSummary
-              items={items}
+              items={summaryItems}
               subtotal={subtotal}
               total={total}
             />
@@ -514,7 +484,6 @@ export function CheckoutPage() {
         )}
       </div>
 
-      {/* Navigation */}
       <div className="mt-6 flex items-center justify-between">
         <Button
           variant="ghost"

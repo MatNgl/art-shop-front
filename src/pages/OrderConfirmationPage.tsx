@@ -3,12 +3,16 @@ import { useParams, useNavigate } from "react-router-dom"
 import { CheckCircle2, Package, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useCart } from "@/hooks"
 import * as ordersService from "@/services/orders.service"
 import type { Order } from "@/types"
+
+const PENDING_ORDER_KEY = "art_shop_pending_order"
 
 export function OrderConfirmationPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { resetCart } = useCart()
 
   const [order, setOrder] = useState<Order | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -19,6 +23,10 @@ export function OrderConfirmationPage() {
       navigate("/galerie")
       return
     }
+
+    // Vider le panier local et nettoyer le sessionStorage
+    resetCart()
+    sessionStorage.removeItem(PENDING_ORDER_KEY)
 
     const loadOrder = async () => {
       try {
@@ -32,7 +40,7 @@ export function OrderConfirmationPage() {
     }
 
     void loadOrder()
-  }, [id, navigate])
+  }, [id, navigate, resetCart])
 
   // ── Loading ──
 
@@ -55,7 +63,7 @@ export function OrderConfirmationPage() {
         <p className="text-sm text-gray-500">{error ?? "Commande introuvable"}</p>
         <Button
           variant="default"
-          className="mt-6 cursor-pointer"
+          className="mt-6"
           onClick={() => navigate("/galerie")}
         >
           Retour au catalogue
@@ -149,7 +157,6 @@ export function OrderConfirmationPage() {
       <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
         <Button
           variant="default"
-          className="cursor-pointer"
           onClick={() => navigate(`/commandes/${order.id}`)}
         >
           Suivre ma commande
@@ -157,7 +164,6 @@ export function OrderConfirmationPage() {
         </Button>
         <Button
           variant="outline"
-          className="cursor-pointer"
           onClick={() => navigate("/galerie")}
         >
           Continuer mes achats

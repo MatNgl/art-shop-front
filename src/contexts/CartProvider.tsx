@@ -6,7 +6,7 @@ import {
 } from 'react'
 import { TOKEN_KEY } from '@/services/api'
 import * as cartService from '@/services/cart.service'
-import { CartContext, type CartContextType } from './CartContext'
+import { CartContext, type CartContextType } from './cartContext'
 import type { AddCartItemPayload } from '@/types'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks'
@@ -39,8 +39,12 @@ export function CartProvider({ children }: CartProviderProps) {
     }
   }, [])
 
+  // ── Vider le state local (après paiement) ─────
+  const resetCart = useCallback(() => {
+    setCart(null)
+  }, [])
+
   // ── Synchro avec l'état d'authentification ────
-  // Se déclenche au login, logout, et au chargement initial
   useEffect(() => {
     if (!authLoading) {
       void refreshCart()
@@ -154,6 +158,7 @@ export function CartProvider({ children }: CartProviderProps) {
     removeItem,
     clearCart,
     refreshCart,
+    resetCart,
   }
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>
