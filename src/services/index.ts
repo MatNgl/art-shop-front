@@ -7,3 +7,4 @@ export * as addressesService from "./addresses.service";
 export * as cartService from "./cart.service";
 export * as ordersService from "./orders.service";
 export * as paymentsService from "./payments.service";
+export * as adminService from "./admin.service";
