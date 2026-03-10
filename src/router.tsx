@@ -12,7 +12,8 @@ import { CheckoutPage } from '@/pages/CheckoutPage'
 import { OrderConfirmationPage } from '@/pages/OrderConfirmationPage'
 import { OrdersPage } from '@/pages/OrdersPage'
 import { OrderDetailPage } from '@/pages/OrderDetailPage'
-
+import { AdminLayout } from '@/components/admin'
+import { DashboardPage, UsersPage, LogsPage, MaterialsPage } from '@/pages/admin'
 
 export const router = createBrowserRouter([
   
@@ -120,6 +121,25 @@ export const router = createBrowserRouter([
         path: '/auth/callback',
         element: <CallbackPage />,
       },
+    ],
+  },
+
+  // ADMIN
+  {
+    path: '/admin',
+    element: <AdminLayout />,
+    children: [
+      { index: true, element: <DashboardPage /> },
+      { path: 'commandes', element: <div className="p-8 text-gray-400">Gestion des commandes (à venir)</div> },
+      { path: 'commandes/:id', element: <div className="p-8 text-gray-400">Détail commande admin (à venir)</div> },
+      { path: 'catalogue', element: <div className="p-8 text-gray-400">Gestion du catalogue (à venir)</div> },
+      { path: 'logs', element: <LogsPage /> },      
+      { path: 'produits', element: <div className="p-8 text-gray-400">Gestion des produits (à venir)</div> },
+      { path: 'categories', element: <div className="p-8 text-gray-400">Gestion des catégories (à venir)</div> },
+      { path: 'formats', element: <div className="p-8 text-gray-400">Gestion des formats (à venir)</div> },
+      { path: 'materiaux', element: <MaterialsPage /> },      
+      { path: 'utilisateurs', element: <UsersPage /> },      
+      { path: 'paniers', element: <div className="p-8 text-gray-400">Gestion des paniers (à venir)</div> },
     ],
   },
 ])
