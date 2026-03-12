@@ -12,7 +12,6 @@ export interface CartContextType {
   clearCart: () => Promise<void>;
   refreshCart: () => Promise<void>;
   resetCart: () => void;
-
 }
 
 export const CartContext = createContext<CartContextType | null>(null);

@@ -70,7 +70,7 @@ export function useCatalogueBreadcrumb({
   }, [categories, activeCategory, activeSubcategory]);
 }
 
-//  Breadcrumb pour la page détail produit 
+//  Breadcrumb pour la page détail produit
 
 interface ProductDetailBreadcrumbParams {
   product: Product | null;

@@ -1,83 +1,87 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Loader2 } from 'lucide-react'
+// On garde Loader2 de lucide car c'est généralement juste une animation CSS (spin) 
+// à moins que tu aies aussi créé un Loader animé spécifique !
+import { Loader2 } from 'lucide-react' 
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
 import * as adminService from '@/services/admin.service'
-import type { MaterialResponse } from '@/types'
+import type { FormatResponse } from '@/types'
 
-// Tes nouveaux imports d'icônes animées
 import { PlusIcon } from '@/components/ui/plus'
 import { SquarePenIcon } from '@/components/ui/square-pen'
 import { DeleteIcon } from '@/components/ui/delete'
 import { XIcon } from '@/components/ui/x'
 import { CheckIcon } from '@/components/ui/check'
 
-export function MaterialsPage() {
-  const [materials, setMaterials] = useState<MaterialResponse[]>([])
+export function FormatsPage() {
+  const [formats, setFormats] = useState<FormatResponse[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
-  const [editingMaterial, setEditingMaterial] = useState<MaterialResponse | null>(null)
+  const [editingFormat, setEditingFormat] = useState<FormatResponse | null>(null)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
-  const fetchMaterials = useCallback(async () => {
+  const fetchFormats = useCallback(async () => {
     setIsLoading(true)
     try {
-      const result = await adminService.getMaterials()
-      setMaterials(result)
+      const result = await adminService.getFormats()
+      setFormats(result)
     } catch {
-      toast.error('Impossible de charger les matériaux')
+      toast.error('Impossible de charger les formats')
     } finally {
       setIsLoading(false)
     }
   }, [])
 
   useEffect(() => {
-    void fetchMaterials()
-  }, [fetchMaterials])
+    void fetchFormats()
+  }, [fetchFormats])
 
-  function handleEdit(material: MaterialResponse) {
-    setEditingMaterial(material)
+  function handleEdit(format: FormatResponse) {
+    setEditingFormat(format)
     setShowForm(true)
   }
 
   function handleCreate() {
-    setEditingMaterial(null)
+    setEditingFormat(null)
     setShowForm(true)
   }
 
   function handleFormClose() {
     setShowForm(false)
-    setEditingMaterial(null)
+    setEditingFormat(null)
   }
 
-  async function handleFormSubmit(data: { name: string; description?: string; isActive: boolean }) {
+  async function handleFormSubmit(data: {
+    name: string
+    widthMm: number
+    heightMm: number
+    isCustom: boolean
+  }) {
     try {
-      if (editingMaterial) {
-        await adminService.updateMaterial(editingMaterial.id, data)
+      if (editingFormat) {
+        await adminService.updateFormat(editingFormat.id, data)
         toast.success(`"${data.name}" mis à jour`)
       } else {
-        await adminService.createMaterial(data)
+        await adminService.createFormat(data)
         toast.success(`"${data.name}" créé`)
       }
       handleFormClose()
-      void fetchMaterials()
+      void fetchFormats()
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erreur'
       toast.error(message)
     }
   }
 
-  async function handleToggleActive(material: MaterialResponse) {
-    setActionLoading(material.id)
+  async function handleDelete(format: FormatResponse) {
+    if (!window.confirm(`Supprimer définitivement "${format.name}" ?`)) return
+
+    setActionLoading(format.id)
     try {
-      await adminService.updateMaterial(material.id, { isActive: !material.isActive })
-      toast.success(
-        material.isActive
-          ? `"${material.name}" désactivé`
-          : `"${material.name}" activé`,
-      )
-      void fetchMaterials()
+      await adminService.deleteFormat(format.id)
+      toast.success(`"${format.name}" supprimé`)
+      void fetchFormats()
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erreur'
       toast.error(message)
@@ -86,31 +90,16 @@ export function MaterialsPage() {
     }
   }
 
-  async function handleDelete(material: MaterialResponse) {
-    if (!window.confirm(`Supprimer définitivement "${material.name}" ?`)) return
-
-    setActionLoading(material.id)
-    try {
-      await adminService.deleteMaterial(material.id)
-      toast.success(`"${material.name}" supprimé`)
-      void fetchMaterials()
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erreur'
-      toast.error(message)
-    } finally {
-      setActionLoading(null)
-    }
-  }
-
-  const activeCount = materials.filter((m) => m.isActive).length
+  const standardCount = formats.filter((f) => !f.isCustom).length
+  const customCount = formats.filter((f) => f.isCustom).length
 
   return (
     <div className="p-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Matériaux</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">Formats</h1>
           <p className="mt-1 text-sm text-gray-500">
-            {materials.length} matériau{materials.length > 1 ? 'x' : ''} dont {activeCount} actif{activeCount > 1 ? 's' : ''}
+            {formats.length} format{formats.length > 1 ? 's' : ''} — {standardCount} standard{standardCount > 1 ? 's' : ''}, {customCount} personnalisé{customCount > 1 ? 's' : ''}
           </p>
         </div>
         <button
@@ -118,13 +107,13 @@ export function MaterialsPage() {
           className="flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 transition-colors cursor-pointer"
         >
           <PlusIcon size={16} />
-          Nouveau matériau
+          Nouveau format
         </button>
       </div>
 
       {showForm && (
-        <MaterialForm
-          material={editingMaterial}
+        <FormatForm
+          format={editingFormat}
           onSubmit={handleFormSubmit}
           onClose={handleFormClose}
         />
@@ -132,10 +121,10 @@ export function MaterialsPage() {
 
       <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden">
         {isLoading ? (
-          <MaterialsTableSkeleton />
-        ) : materials.length === 0 ? (
+          <FormatsTableSkeleton />
+        ) : formats.length === 0 ? (
           <div className="px-6 py-16 text-center text-sm text-gray-400">
-            Aucun matériau créé
+            Aucun format créé
           </div>
         ) : (
           <table className="w-full">
@@ -145,10 +134,10 @@ export function MaterialsPage() {
                   Nom
                 </th>
                 <th className="px-6 py-3 text-xs font-medium uppercase tracking-wider text-gray-400">
-                  Description
+                  Dimensions
                 </th>
                 <th className="px-6 py-3 text-xs font-medium uppercase tracking-wider text-gray-400">
-                  Statut
+                  Type
                 </th>
                 <th className="px-6 py-3 text-xs font-medium uppercase tracking-wider text-gray-400">
                   Créé le
@@ -159,43 +148,33 @@ export function MaterialsPage() {
               </tr>
             </thead>
             <tbody>
-              {materials.map((material) => (
+              {formats.map((format) => (
                 <tr
-                  key={material.id}
+                  key={format.id}
                   className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors"
                 >
                   <td className="px-6 py-4">
-                    <p className="text-sm font-medium text-gray-900">{material.name}</p>
+                    <p className="text-sm font-medium text-gray-900">{format.name}</p>
                   </td>
                   <td className="px-6 py-4">
-                    <p className="text-sm text-gray-500 line-clamp-1">
-                      {material.description || '—'}
-                    </p>
+                    <span className="rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-mono text-gray-600">
+                      {format.widthMm} × {format.heightMm} mm
+                    </span>
                   </td>
                   <td className="px-6 py-4">
-                    <button
-                      onClick={() => handleToggleActive(material)}
-                      disabled={actionLoading === material.id}
+                    <span
                       className={cn(
-                        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset cursor-pointer transition-colors',
-                        material.isActive
-                          ? 'bg-emerald-50 text-emerald-700 ring-emerald-200 hover:bg-emerald-100'
-                          : 'bg-gray-50 text-gray-500 ring-gray-200 hover:bg-gray-100',
+                        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset',
+                        format.isCustom
+                          ? 'bg-amber-50 text-amber-700 ring-amber-200'
+                          : 'bg-blue-50 text-blue-700 ring-blue-200',
                       )}
                     >
-                      {actionLoading === material.id ? (
-                        <Loader2 size={12} className="animate-spin" />
-                      ) : (
-                        <span className={cn(
-                          'h-1.5 w-1.5 rounded-full',
-                          material.isActive ? 'bg-emerald-500' : 'bg-gray-400',
-                        )} />
-                      )}
-                      {material.isActive ? 'Actif' : 'Inactif'}
-                    </button>
+                      {format.isCustom ? 'Personnalisé' : 'Standard'}
+                    </span>
                   </td>
                   <td className="px-6 py-4 text-xs text-gray-500">
-                    {new Date(material.createdAt).toLocaleDateString('fr-FR', {
+                    {new Date(format.createdAt).toLocaleDateString('fr-FR', {
                       day: 'numeric',
                       month: 'short',
                       year: 'numeric',
@@ -203,19 +182,19 @@ export function MaterialsPage() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-1">
-                      {actionLoading === material.id ? (
+                      {actionLoading === format.id ? (
                         <Loader2 size={16} className="animate-spin text-gray-400" />
                       ) : (
                         <>
                           <button
-                            onClick={() => handleEdit(material)}
+                            onClick={() => handleEdit(format)}
                             className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-900 transition-colors flex items-center justify-center"
                             title="Modifier"
                           >
                             <SquarePenIcon size={15} />
                           </button>
                           <button
-                            onClick={() => handleDelete(material)}
+                            onClick={() => handleDelete(format)}
                             className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors flex items-center justify-center"
                             title="Supprimer"
                           >
@@ -235,31 +214,42 @@ export function MaterialsPage() {
   )
 }
 
-interface MaterialFormProps {
-  material: MaterialResponse | null
-  onSubmit: (data: { name: string; description?: string; isActive: boolean }) => Promise<void>
+interface FormatFormProps {
+  format: FormatResponse | null
+  onSubmit: (data: { name: string; widthMm: number; heightMm: number; isCustom: boolean }) => Promise<void>
   onClose: () => void
 }
 
-function MaterialForm({ material, onSubmit, onClose }: MaterialFormProps) {
-  const [name, setName] = useState(material?.name ?? '')
-  const [description, setDescription] = useState(material?.description ?? '')
-  const [isActive, setIsActive] = useState(material?.isActive ?? true)
+function FormatForm({ format, onSubmit, onClose }: FormatFormProps) {
+  const [name, setName] = useState(format?.name ?? '')
+  const [widthMm, setWidthMm] = useState(format?.widthMm?.toString() ?? '')
+  const [heightMm, setHeightMm] = useState(format?.heightMm?.toString() ?? '')
+  const [isCustom, setIsCustom] = useState(format?.isCustom ?? false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+
     if (!name.trim()) {
       toast.error('Le nom est obligatoire')
       return
     }
+
+    const w = parseInt(widthMm, 10)
+    const h = parseInt(heightMm, 10)
+
+    if (isNaN(w) || w <= 0) {
+      toast.error('La largeur doit être un nombre positif')
+      return
+    }
+    if (isNaN(h) || h <= 0) {
+      toast.error('La hauteur doit être un nombre positif')
+      return
+    }
+
     setIsSubmitting(true)
     try {
-      await onSubmit({
-        name: name.trim(),
-        description: description.trim() || undefined,
-        isActive,
-      })
+      await onSubmit({ name: name.trim(), widthMm: w, heightMm: h, isCustom })
     } finally {
       setIsSubmitting(false)
     }
@@ -269,7 +259,7 @@ function MaterialForm({ material, onSubmit, onClose }: MaterialFormProps) {
     <div className="rounded-2xl border border-gray-200 bg-white p-6">
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-sm font-semibold uppercase tracking-widest text-gray-400">
-          {material ? 'Modifier le matériau' : 'Nouveau matériau'}
+          {format ? 'Modifier le format' : 'Nouveau format'}
         </h2>
         <button
           onClick={onClose}
@@ -286,34 +276,51 @@ function MaterialForm({ material, onSubmit, onClose }: MaterialFormProps) {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Ex : Papier Fine Art"
+            placeholder="Ex : A4"
             className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-200 transition-colors"
             autoFocus
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
-            Description
-            <span className="ml-1 text-gray-300 font-normal">(optionnel)</span>
-          </label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Papier haut de gamme pour impressions artistiques"
-            rows={2}
-            className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-200 transition-colors resize-none"
-          />
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Largeur
+              <span className="ml-1 text-gray-300 font-normal">(mm)</span>
+            </label>
+            <input
+              type="number"
+              value={widthMm}
+              onChange={(e) => setWidthMm(e.target.value)}
+              placeholder="210"
+              min={1}
+              className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-200 transition-colors"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Hauteur
+              <span className="ml-1 text-gray-300 font-normal">(mm)</span>
+            </label>
+            <input
+              type="number"
+              value={heightMm}
+              onChange={(e) => setHeightMm(e.target.value)}
+              placeholder="297"
+              min={1}
+              className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-200 transition-colors"
+            />
+          </div>
         </div>
 
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
-            checked={isActive}
-            onChange={(e) => setIsActive(e.target.checked)}
+            checked={isCustom}
+            onChange={(e) => setIsCustom(e.target.checked)}
             className="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-200"
           />
-          <span className="text-sm text-gray-600">Actif</span>
+          <span className="text-sm text-gray-600">Format personnalisé</span>
         </label>
 
         <div className="flex items-center gap-3 pt-2">
@@ -327,7 +334,7 @@ function MaterialForm({ material, onSubmit, onClose }: MaterialFormProps) {
             ) : (
               <CheckIcon size={16} />
             )}
-            {material ? 'Enregistrer' : 'Créer'}
+            {format ? 'Enregistrer' : 'Créer'}
           </button>
           <button
             type="button"
@@ -342,14 +349,14 @@ function MaterialForm({ material, onSubmit, onClose }: MaterialFormProps) {
   )
 }
 
-function MaterialsTableSkeleton() {
+function FormatsTableSkeleton() {
   return (
     <div className="px-6 py-4 space-y-4">
       {Array.from({ length: 6 }).map((_, i) => (
         <div key={i} className="flex items-center gap-4">
-          <Skeleton className="h-4 w-32" />
-          <Skeleton className="h-4 w-48" />
-          <Skeleton className="h-5 w-16 rounded-full" />
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-5 w-32 rounded-lg" />
+          <Skeleton className="h-5 w-24 rounded-full" />
           <Skeleton className="h-3 w-24" />
           <Skeleton className="ml-auto h-6 w-16" />
         </div>
