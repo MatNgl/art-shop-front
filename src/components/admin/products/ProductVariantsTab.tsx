@@ -3,15 +3,17 @@ import { Loader2, ArchiveRestore, PackagePlus } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import * as adminService from '@/services/admin.service'
-import type { 
-  ProductResponse, 
-  ProductVariantResponse, 
-  ProductVariantPayload, 
+import type {
+  ProductResponse,
+  ProductVariantResponse,
+  ProductVariantPayload,
   ProductVariantStatus,
   FormatResponse,
   MaterialResponse
 } from '@/types'
 
+import { ConfirmModal } from '@/components/ui/confirm-modal'
+import { useConfirm } from '@/hooks'
 import { PlusIcon } from '@/components/ui/plus'
 import { SquarePenIcon } from '@/components/ui/square-pen'
 import { DeleteIcon } from '@/components/ui/delete'
@@ -29,24 +31,24 @@ export function ProductVariantsTab({ product }: { product: ProductResponse }) {
   const [variants, setVariants] = useState<ProductVariantResponse[]>([])
   const [formats, setFormats] = useState<FormatResponse[]>([])
   const [materials, setMaterials] = useState<MaterialResponse[]>([])
-  
+
   const [isLoading, setIsLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
-  
+
   const [showForm, setShowForm] = useState(false)
   const [editingVariant, setEditingVariant] = useState<ProductVariantResponse | null>(null)
+  const { modalProps, confirm } = useConfirm()
 
   const fetchData = useCallback(async () => {
     setIsLoading(true)
     try {
-      // On charge tout en parallèle
       const [variantsData, formatsData, materialsData] = await Promise.all([
         adminService.getProductVariants(product.id),
         adminService.getFormats(),
         adminService.getMaterials()
       ])
       setVariants(variantsData)
-      setFormats(formatsData.filter(f => !f.isCustom)) // Exemple: on filtre les standards ? (optionnel)
+      setFormats(formatsData)
       setMaterials(materialsData.filter(m => m.isActive))
     } catch {
       toast.error('Impossible de charger les données des variantes')
@@ -59,7 +61,6 @@ export function ProductVariantsTab({ product }: { product: ProductResponse }) {
     void fetchData()
   }, [fetchData])
 
-  // --- Handlers ---
   function handleCreate() {
     setEditingVariant(null)
     setShowForm(true)
@@ -98,22 +99,36 @@ export function ProductVariantsTab({ product }: { product: ProductResponse }) {
     }
   }
 
-  async function handleStockAdjust(variant: ProductVariantResponse) {
-    const input = window.prompt(`Ajuster le stock pour ${variant.format.name} - ${variant.material.name}\n(Utilisez "-" pour retirer, ex: -5 ou 10)`)
-    if (!input) return
-    const change = parseInt(input, 10)
-    if (isNaN(change)) {
-      toast.error('Veuillez entrer un nombre valide')
+  async function handleStockSet(variant: ProductVariantResponse) {
+    const result = await confirm({
+      title: `Stock : ${variant.format.name} – ${variant.material.name}`,
+      description: `Stock actuel : ${variant.stockQty}`,
+      confirmLabel: 'Mettre à jour',
+      input: {
+        label: 'Nouveau stock total',
+        placeholder: '0',
+        defaultValue: String(variant.stockQty),
+        type: 'number',
+        min: 0,
+      },
+    })
+
+    if (result === false) return
+
+    const newStock = parseInt(String(result), 10)
+    if (isNaN(newStock) || newStock < 0) {
+      toast.error('Veuillez entrer un nombre positif ou zéro')
       return
     }
+    if (newStock === variant.stockQty) return
 
     setActionLoading(`stock-${variant.id}`)
     try {
-      await adminService.updateVariantStock(product.id, variant.id, change)
-      toast.success('Stock mis à jour avec succès')
+      await adminService.updateProductVariant(product.id, variant.id, { stockQty: newStock })
+      toast.success(`Stock mis à jour : ${newStock}`)
       void fetchData()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Erreur de stock')
+      toast.error(err instanceof Error ? err.message : 'Erreur')
     } finally {
       setActionLoading(null)
     }
@@ -151,12 +166,12 @@ export function ProductVariantsTab({ product }: { product: ProductResponse }) {
       </div>
 
       {showForm && (
-        <VariantForm 
-          variant={editingVariant} 
-          formats={formats} 
-          materials={materials} 
-          onSubmit={handleFormSubmit} 
-          onClose={() => setShowForm(false)} 
+        <VariantForm
+          variant={editingVariant}
+          formats={formats}
+          materials={materials}
+          onSubmit={handleFormSubmit}
+          onClose={() => setShowForm(false)}
         />
       )}
 
@@ -180,12 +195,13 @@ export function ProductVariantsTab({ product }: { product: ProductResponse }) {
             <tbody>
               {variants.map((variant) => {
                 const config = STATUS_CONFIG[variant.status]
-                
+
                 return (
                   <tr key={variant.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">{variant.format.name}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{variant.material.name}</td>
-                    <td className="px-6 py-4 text-sm font-mono text-gray-900">{Number(variant.price).toFixed(2)} €</td>                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-sm font-mono text-gray-900">{Number(variant.price).toFixed(2)} €</td>
+                    <td className="px-6 py-4">
                       <span className={cn(
                         "text-sm font-mono px-2.5 py-1 rounded-lg",
                         variant.stockQty <= 0 ? "bg-red-50 text-red-600" : "bg-gray-100 text-gray-600"
@@ -206,25 +222,25 @@ export function ProductVariantsTab({ product }: { product: ProductResponse }) {
                           <>
                             {variant.status !== 'DISCONTINUED' && (
                               <button
-                                onClick={() => handleStockAdjust(variant)}
-                                className="rounded-lg p-1.5 text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition-colors flex items-center justify-center"
-                                title="Ajuster le stock"
+                                onClick={() => handleStockSet(variant)}
+                                className="rounded-lg p-1.5 text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition-colors flex items-center justify-center cursor-pointer"
+                                title="Définir le stock"
                               >
                                 <PackagePlus size={15} />
                               </button>
                             )}
                             <button
                               onClick={() => handleEdit(variant)}
-                              className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-900 transition-colors flex items-center justify-center"
+                              className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-900 transition-colors flex items-center justify-center cursor-pointer"
                               title="Modifier"
                             >
                               <SquarePenIcon size={15} />
                             </button>
-                            
+
                             {variant.status !== 'DISCONTINUED' ? (
                               <button
                                 onClick={() => handleArchive(variant)}
-                                className="rounded-lg p-1.5 text-gray-400 hover:bg-amber-50 hover:text-amber-600 transition-colors flex items-center justify-center"
+                                className="rounded-lg p-1.5 text-gray-400 hover:bg-amber-50 hover:text-amber-600 transition-colors flex items-center justify-center cursor-pointer"
                                 title="Arrêter la vente (Archiver)"
                               >
                                 <ArchiveRestore size={15} />
@@ -232,7 +248,7 @@ export function ProductVariantsTab({ product }: { product: ProductResponse }) {
                             ) : (
                               <button
                                 onClick={() => handleDelete(variant)}
-                                className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors flex items-center justify-center"
+                                className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors flex items-center justify-center cursor-pointer"
                                 title="Supprimer définitivement"
                               >
                                 <DeleteIcon size={15} />
@@ -249,6 +265,7 @@ export function ProductVariantsTab({ product }: { product: ProductResponse }) {
           </table>
         )}
       </div>
+            <ConfirmModal {...modalProps} />
     </div>
   )
 }
@@ -265,11 +282,10 @@ interface VariantFormProps {
 
 function VariantForm({ variant, formats, materials, onSubmit, onClose }: VariantFormProps) {
   const isEditing = !!variant
-  
+
   const [formatId, setFormatId] = useState(variant?.format.id ?? '')
   const [materialId, setMaterialId] = useState(variant?.material.id ?? '')
-  const [price, setPrice] = useState(variant?.price.toString() ?? '')
-  // Le stock est optionnel, on le gère surtout à la création
+  const [price, setPrice] = useState(variant ? Number(variant.price).toString() : '')
   const [stockQty, setStockQty] = useState(variant?.stockQty.toString() ?? '0')
   const [status, setStatus] = useState<ProductVariantStatus>(variant?.status ?? 'AVAILABLE')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -285,14 +301,19 @@ function VariantForm({ variant, formats, materials, onSubmit, onClose }: Variant
       toast.error('Le prix doit être un nombre positif')
       return
     }
-    
+    const parsedStock = parseInt(stockQty, 10)
+    if (isNaN(parsedStock) || parsedStock < 0) {
+      toast.error('Le stock doit être un nombre positif ou zéro')
+      return
+    }
+
     setIsSubmitting(true)
     try {
       await onSubmit({
         formatId,
         materialId,
         price: parsedPrice,
-        stockQty: parseInt(stockQty, 10) || 0,
+        stockQty: parsedStock,
         status,
       })
     } finally {
@@ -306,7 +327,7 @@ function VariantForm({ variant, formats, materials, onSubmit, onClose }: Variant
         <h3 className="text-sm font-semibold uppercase tracking-widest text-gray-500">
           {isEditing ? 'Modifier la déclinaison' : 'Nouvelle déclinaison'}
         </h3>
-        <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-900 transition-colors">
+        <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-900 transition-colors cursor-pointer">
           <XIcon size={16} />
         </button>
       </div>
@@ -318,7 +339,7 @@ function VariantForm({ variant, formats, materials, onSubmit, onClose }: Variant
             <select
               value={formatId}
               onChange={(e) => setFormatId(e.target.value)}
-              className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-200"
+              className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-200 cursor-pointer"
               required
             >
               <option value="" disabled>Sélectionnez un format</option>
@@ -330,7 +351,7 @@ function VariantForm({ variant, formats, materials, onSubmit, onClose }: Variant
             <select
               value={materialId}
               onChange={(e) => setMaterialId(e.target.value)}
-              className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-200"
+              className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-200 cursor-pointer"
               required
             >
               <option value="" disabled>Sélectionnez un matériau</option>
@@ -353,22 +374,21 @@ function VariantForm({ variant, formats, materials, onSubmit, onClose }: Variant
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Stock Initial</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Stock total</label>
             <input
               type="number"
+              min={0}
               value={stockQty}
               onChange={(e) => setStockQty(e.target.value)}
-              disabled={isEditing} // Généralement, en édition, on utilise le bouton d'ajustement de stock
-              className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-mono text-gray-900 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-200 disabled:bg-gray-100 disabled:text-gray-400"
+              className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-mono text-gray-900 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-200"
             />
-            {isEditing && <p className="mt-1 text-[10px] text-gray-400">Utilisez l'icône + dans la liste pour ajuster</p>}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Statut</label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as ProductVariantStatus)}
-              className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-200"
+              className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-200 cursor-pointer"
             >
               <option value="AVAILABLE">Disponible</option>
               <option value="OUT_OF_STOCK">Rupture</option>
@@ -381,12 +401,12 @@ function VariantForm({ variant, formats, materials, onSubmit, onClose }: Variant
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex items-center gap-2 rounded-xl bg-gray-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+            className="flex items-center gap-2 rounded-xl bg-gray-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 cursor-pointer"
           >
             {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <CheckIcon size={16} />}
             {isEditing ? 'Enregistrer' : 'Créer'}
           </button>
-          <button type="button" onClick={onClose} className="px-5 py-2.5 text-sm text-gray-500 hover:text-gray-900">
+          <button type="button" onClick={onClose} className="px-5 py-2.5 text-sm text-gray-500 hover:text-gray-900 cursor-pointer">
             Annuler
           </button>
         </div>

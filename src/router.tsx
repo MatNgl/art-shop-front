@@ -13,7 +13,7 @@ import { OrderConfirmationPage } from '@/pages/OrderConfirmationPage'
 import { OrdersPage } from '@/pages/OrdersPage'
 import { OrderDetailPage } from '@/pages/OrderDetailPage'
 import { AdminLayout } from '@/components/admin'
-import { DashboardPage, UsersPage, LogsPage, MaterialsPage, FormatsPage, CategoriesPage, ProductsPage, ProductEditorPage  } from '@/pages/admin'
+import { DashboardPage, UsersPage, LogsPage, MaterialsPage, FormatsPage, CategoriesPage, ProductsPage, ProductEditorPage, TagsPage  } from '@/pages/admin'
 
 export const router = createBrowserRouter([
   
@@ -139,6 +139,7 @@ export const router = createBrowserRouter([
       { path: 'produits/:id', element: <ProductEditorPage /> },
       { path: 'categories', element: <CategoriesPage /> },
       { path: 'formats', element: <FormatsPage /> },
+      { path: 'tags', element: <TagsPage /> },
       { path: 'materiaux', element: <MaterialsPage /> },      
       { path: 'utilisateurs', element: <UsersPage /> },      
       { path: 'paniers', element: <div className="p-8 text-gray-400">Gestion des paniers (à venir)</div> },

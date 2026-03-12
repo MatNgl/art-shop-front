@@ -1,4 +1,4 @@
-import { get, post, patch, del } from "./api";
+import { get, post, patch, del, uploadFile } from "./api";
 import type {
   DashboardStats,
   RecentOrderSummary,
@@ -11,8 +11,13 @@ import type {
   FormatResponse,
   CategoryResponse,
   SubcategoryResponse,
-  ProductResponse, ProductPayload, ProductStatus, TagResponse,
-  ProductVariantResponse, ProductVariantPayload
+  ProductResponse,
+  ProductPayload,
+  ProductStatus,
+  TagResponse,
+  ProductVariantResponse,
+  ProductVariantPayload,
+  ProductImageResponse,
 } from "@/types";
 //  Stats utilisateurs
 
@@ -243,62 +248,175 @@ export function deleteSubcategory(id: string): Promise<void> {
   return del<void>(`/subcategories/${id}`);
 }
 
-
 // --- Produits admin ---
 
-export function getProducts(status?: ProductStatus | 'ALL'): Promise<ProductResponse[]> {
-  const query = status && status !== 'ALL' ? `?status=${status}` : ''
-  return get<ProductResponse[]>(`/products${query}`)
+export function getProducts(
+  status?: ProductStatus | "ALL",
+): Promise<ProductResponse[]> {
+  const query = status && status !== "ALL" ? `?status=${status}` : "";
+  return get<ProductResponse[]>(`/products${query}`);
 }
 
 export function createProduct(data: ProductPayload): Promise<ProductResponse> {
-  return post<ProductResponse>('/products', data)
+  return post<ProductResponse>("/products", data);
 }
 
-export function updateProduct(id: string, data: Partial<ProductPayload>): Promise<ProductResponse> {
-  return patch<ProductResponse>(`/products/${id}`, data)
+export function updateProduct(
+  id: string,
+  data: Partial<ProductPayload>,
+): Promise<ProductResponse> {
+  return patch<ProductResponse>(`/products/${id}`, data);
 }
 
 export function archiveProduct(id: string): Promise<ProductResponse> {
-  return patch<ProductResponse>(`/products/${id}/archive`, {})
+  return patch<ProductResponse>(`/products/${id}/archive`, {});
 }
 
 export function deleteProduct(id: string): Promise<void> {
-  return del<void>(`/products/${id}`)
-}
-
-// --- Tags admin ---
-export function getTags(): Promise<TagResponse[]> {
-  return get<TagResponse[]>('/tags')
+  return del<void>(`/products/${id}`);
 }
 
 // --- Produits admin (Ajout du getById) ---
 export function getProductById(id: string): Promise<ProductResponse> {
-  return get<ProductResponse>(`/products/${id}`)
+  return get<ProductResponse>(`/products/${id}`);
 }
 
 // --- Variantes admin ---
 
-export function getProductVariants(productId: string): Promise<ProductVariantResponse[]> {
-  return get<ProductVariantResponse[]>(`/products/${productId}/variants`)
+export function getProductVariants(
+  productId: string,
+): Promise<ProductVariantResponse[]> {
+  return get<ProductVariantResponse[]>(`/products/${productId}/variants`);
 }
 
-export function createProductVariant(productId: string, data: ProductVariantPayload): Promise<ProductVariantResponse> {
-  return post<ProductVariantResponse>(`/products/${productId}/variants`, data)
+export function createProductVariant(
+  productId: string,
+  data: ProductVariantPayload,
+): Promise<ProductVariantResponse> {
+  return post<ProductVariantResponse>(`/products/${productId}/variants`, data);
 }
 
-export function updateProductVariant(productId: string, variantId: string, data: Partial<ProductVariantPayload>): Promise<ProductVariantResponse> {
-  return patch<ProductVariantResponse>(`/products/${productId}/variants/${variantId}`, data)
+export function updateProductVariant(
+  productId: string,
+  variantId: string,
+  data: Partial<ProductVariantPayload>,
+): Promise<ProductVariantResponse> {
+  return patch<ProductVariantResponse>(
+    `/products/${productId}/variants/${variantId}`,
+    data,
+  );
 }
 
-export function updateVariantStock(productId: string, variantId: string, quantityChange: number): Promise<ProductVariantResponse> {
-  return patch<ProductVariantResponse>(`/products/${productId}/variants/${variantId}/stock`, { quantityChange })
+export function updateVariantStock(
+  productId: string,
+  variantId: string,
+  quantityChange: number,
+): Promise<ProductVariantResponse> {
+  return patch<ProductVariantResponse>(
+    `/products/${productId}/variants/${variantId}/stock`,
+    { quantityChange },
+  );
 }
 
-export function archiveProductVariant(productId: string, variantId: string): Promise<ProductVariantResponse> {
-  return patch<ProductVariantResponse>(`/products/${productId}/variants/${variantId}/archive`, {})
+export function archiveProductVariant(
+  productId: string,
+  variantId: string,
+): Promise<ProductVariantResponse> {
+  return patch<ProductVariantResponse>(
+    `/products/${productId}/variants/${variantId}/archive`,
+    {},
+  );
 }
 
-export function deleteProductVariant(productId: string, variantId: string): Promise<void> {
-  return del<void>(`/products/${productId}/variants/${variantId}`)
+export function deleteProductVariant(
+  productId: string,
+  variantId: string,
+): Promise<void> {
+  return del<void>(`/products/${productId}/variants/${variantId}`);
+}
+
+// --- Images produit admin ---
+
+interface UploadProductImageParams {
+  altText?: string;
+  position?: number;
+  isPrimary?: boolean;
+}
+
+export function getProductImages(
+  productId: string,
+): Promise<ProductImageResponse[]> {
+  return get<ProductImageResponse[]>(`/products/${productId}/images`);
+}
+
+export function uploadProductImage(
+  productId: string,
+  file: File,
+  params?: UploadProductImageParams,
+): Promise<ProductImageResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+  if (params?.altText) formData.append("altText", params.altText);
+  if (params?.position !== undefined)
+    formData.append("position", String(params.position));
+  if (params?.isPrimary !== undefined)
+    formData.append("isPrimary", String(params.isPrimary));
+  return uploadFile<ProductImageResponse>(
+    `/products/${productId}/images`,
+    formData,
+  );
+}
+
+export function updateProductImage(
+  productId: string,
+  imageId: string,
+  data: { altText?: string; position?: number; isPrimary?: boolean },
+): Promise<ProductImageResponse> {
+  return patch<ProductImageResponse>(
+    `/products/${productId}/images/${imageId}`,
+    data,
+  );
+}
+
+export function deleteProductImage(
+  productId: string,
+  imageId: string,
+): Promise<void> {
+  return del<void>(`/products/${productId}/images/${imageId}`);
+}
+
+export function setProductImagePrimary(
+  productId: string,
+  imageId: string,
+): Promise<ProductImageResponse> {
+  return patch<ProductImageResponse>(
+    `/products/${productId}/images/${imageId}/primary`,
+    {},
+  );
+}
+
+// --- Tags admin (CRUD complet) ---
+
+interface TagPayload {
+  name: string;
+}
+
+export function getTags(): Promise<TagResponse[]> {
+  return get<TagResponse[]>("/tags");
+}
+
+export function createTag(data: TagPayload): Promise<TagResponse> {
+  return post<TagResponse>("/tags", data);
+}
+
+export function updateTag(
+  id: string,
+  data: Partial<TagPayload>,
+): Promise<TagResponse> {
+  return patch<TagResponse>(`/tags/${id}`, data);
+}
+
+// Le controller utilise POST au lieu de DELETE
+export function deleteTag(id: string): Promise<void> {
+  return post<void>(`/tags/${id}/delete`, {});
 }

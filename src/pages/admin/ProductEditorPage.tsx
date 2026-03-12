@@ -8,6 +8,7 @@ import type { ProductResponse } from '@/types'
 
 import { ProductGeneralTab } from '@/components/admin/products/ProductGeneralTab'
 import { ProductVariantsTab } from '@/components/admin/products/ProductVariantsTab'
+import { ProductImagesTab } from '@/components/admin/products/ProductImagesTab'
 
 type TabType = 'GENERAL' | 'VARIANTS' | 'IMAGES'
 
@@ -83,7 +84,7 @@ export function ProductEditorPage() {
               <TabButton 
                 active={activeTab === 'VARIANTS'} 
                 onClick={() => setActiveTab('VARIANTS')}
-                label="Déclinaisons & Stocks" 
+                label="Variantes & stocks" 
               />
               <TabButton 
                 active={activeTab === 'IMAGES'} 
@@ -101,9 +102,7 @@ export function ProductEditorPage() {
             <ProductVariantsTab product={product} />
           )}
           {activeTab === 'IMAGES' && !isNew && product && (
-            <div className="p-8 text-center text-gray-500 bg-white rounded-2xl border border-gray-200">
-              L'interface des images arrive à la prochaine étape !
-            </div>
+            <ProductImagesTab product={product} />
           )}
         </div>
       )}

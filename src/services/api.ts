@@ -76,3 +76,35 @@ export function put<T>(endpoint: string, body: unknown): Promise<T> {
 export function del<T>(endpoint: string): Promise<T> {
   return request<T>(endpoint, { method: "DELETE" });
 }
+
+/** Upload multipart/form-data (pour les fichiers) */
+export async function uploadFile<T>(
+  endpoint: string,
+  formData: FormData,
+): Promise<T> {
+  const token = localStorage.getItem(TOKEN_KEY);
+
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  // Pas de Content-Type : le navigateur le définit avec le boundary
+
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    method: "POST",
+    headers,
+    body: formData,
+  });
+
+  const data: unknown = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const error = data as { message?: string | string[] };
+    const message = Array.isArray(error?.message)
+      ? error.message[0]
+      : error?.message || "Une erreur est survenue";
+    throw new Error(message);
+  }
+
+  return data as T;
+}

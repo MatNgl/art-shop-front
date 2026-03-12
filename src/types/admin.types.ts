@@ -148,92 +148,94 @@ export interface CategoryResponse {
   createdAt: string;
   updatedAt: string;
 }
-export type ProductStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
+export type ProductStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 
 export interface TagResponse {
-  id: string
-  name: string
-  slug: string
+  id: string;
+  name: string;
+  slug: string;
+  createdAt: string;
+  updatedAt?: string;
 }
 
 export interface ProductResponse {
-  id: string
-  name: string
-  slug: string
-  description?: string
-  shortDescription?: string
-  status: ProductStatus
-  featured: boolean
-  seoTitle?: string
-  seoDescription?: string
-  tags: TagResponse[]
-  createdAt: string
-  updatedAt: string
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  shortDescription?: string;
+  status: ProductStatus;
+  featured: boolean;
+  seoTitle?: string;
+  seoDescription?: string;
+  tags: TagResponse[];
+  categories: CategoryResponse[];
+  subcategories: SubcategoryResponse[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ProductPayload {
-  name: string
-  description?: string
-  shortDescription?: string
-  status?: ProductStatus
-  featured?: boolean
-  seoTitle?: string
-  seoDescription?: string
-  tagIds?: string[]
+  name: string;
+  description?: string;
+  shortDescription?: string;
+  status?: ProductStatus;
+  featured?: boolean;
+  seoTitle?: string;
+  seoDescription?: string;
+  tagIds?: string[];
+  categoryIds?: string[];
+  subcategories: SubcategoryResponse[];
 }
 
-
-export type ProductVariantStatus = 'AVAILABLE' | 'OUT_OF_STOCK' | 'DISCONTINUED'
-export type ProductImageStatus = 'ACTIVE' | 'INACTIVE'
-
-export interface TagResponse {
-  id: string
-  name: string
-  slug: string
-}
+export type ProductVariantStatus =
+  | "AVAILABLE"
+  | "OUT_OF_STOCK"
+  | "DISCONTINUED";
+export type ProductImageStatus = "ACTIVE" | "INACTIVE";
 
 export interface ImageUrls {
-  thumbnail: string
-  small: string
-  medium: string
-  large: string
-  original: string
+  thumbnail: string;
+  small: string;
+  medium: string;
+  large: string;
+  original: string;
 }
 
 export interface ProductImageResponse {
-  id: string
-  productId: string
-  publicId: string
-  url: string
-  urls: ImageUrls
-  altText?: string
-  position: number
-  status: ProductImageStatus
-  isPrimary: boolean
-  createdAt: string
-  createdById: string
+  id: string;
+  productId: string;
+  publicId: string;
+  url: string;
+  urls: ImageUrls;
+  altText?: string;
+  position: number;
+  status: ProductImageStatus;
+  isPrimary: boolean;
+  createdAt: string;
+  createdById: string;
 }
 
 export interface ProductVariantResponse {
-  id: string
-  productId: string
-  format: FormatResponse
-  material: MaterialResponse
-  price: number
-  stockQty: number
-  status: ProductVariantStatus
-  createdAt: string
-  updatedAt: string
+  id: string;
+  productId: string;
+  format: FormatResponse;
+  material: MaterialResponse;
+  price: number;
+  stockQty: number;
+  status: ProductVariantStatus;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ProductVariantPayload {
-  formatId: string
-  materialId: string
-  price: number
-  stockQty?: number
-  status?: ProductVariantStatus
+  formatId: string;
+  materialId: string;
+  price: number;
+  stockQty?: number;
+  status?: ProductVariantStatus;
 }
 
 export interface UpdateStockPayload {
-  quantityChange: number
+  quantityChange: number;
 }

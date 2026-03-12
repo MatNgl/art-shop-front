@@ -3,7 +3,7 @@ import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import * as adminService from '@/services/admin.service'
-import type { ProductResponse, ProductPayload, ProductStatus, TagResponse } from '@/types'
+import type { ProductResponse, ProductPayload, ProductStatus, TagResponse, CategoryResponse } from '@/types'
 import { CheckIcon } from '@/components/ui/check'
 
 interface ProductGeneralTabProps {
@@ -14,8 +14,8 @@ interface ProductGeneralTabProps {
 export function ProductGeneralTab({ product, onSaved }: ProductGeneralTabProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [availableTags, setAvailableTags] = useState<TagResponse[]>([])
+  const [availableCategories, setAvailableCategories] = useState<CategoryResponse[]>([])
 
-  // Champs du formulaire
   const [name, setName] = useState(product?.name ?? '')
   const [shortDescription, setShortDescription] = useState(product?.shortDescription ?? '')
   const [description, setDescription] = useState(product?.description ?? '')
@@ -26,23 +26,35 @@ export function ProductGeneralTab({ product, onSaved }: ProductGeneralTabProps) 
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>(
     product?.tags?.map(t => t.id) ?? []
   )
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>(
+    product?.categories?.map(c => c.id) ?? []
+  )
 
-  // Récupérer les tags au chargement
   useEffect(() => {
-    async function loadTags() {
+    async function loadReferenceData() {
       try {
-        const tags = await adminService.getTags()
+        const [tags, categories] = await Promise.all([
+          adminService.getTags(),
+          adminService.getCategories(),
+        ])
         setAvailableTags(tags)
+        setAvailableCategories(categories)
       } catch {
-        toast.error('Impossible de charger les tags')
+        toast.error('Impossible de charger les données de référence')
       }
     }
-    void loadTags()
+    void loadReferenceData()
   }, [])
 
   const handleTagToggle = (tagId: string) => {
-    setSelectedTagIds(prev => 
+    setSelectedTagIds(prev =>
       prev.includes(tagId) ? prev.filter(id => id !== tagId) : [...prev, tagId]
+    )
+  }
+
+  const handleCategoryToggle = (categoryId: string) => {
+    setSelectedCategoryIds(prev =>
+      prev.includes(categoryId) ? prev.filter(id => id !== categoryId) : [...prev, categoryId]
     )
   }
 
@@ -64,6 +76,7 @@ export function ProductGeneralTab({ product, onSaved }: ProductGeneralTabProps) 
         seoTitle: seoTitle.trim() || undefined,
         seoDescription: seoDescription.trim() || undefined,
         tagIds: selectedTagIds.length > 0 ? selectedTagIds : undefined,
+        categoryIds: selectedCategoryIds.length > 0 ? selectedCategoryIds : undefined,
       }
 
       let savedProduct: ProductResponse
@@ -86,14 +99,14 @@ export function ProductGeneralTab({ product, onSaved }: ProductGeneralTabProps) 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* COLONNE GAUCHE (Infos principales) */}
+
+        {/* COLONNE GAUCHE */}
         <div className="col-span-2 space-y-6">
           <div className="p-6 bg-white border border-gray-200 rounded-2xl space-y-4">
             <h2 className="text-sm font-semibold uppercase tracking-widest text-gray-400 mb-4">
               Informations de base
             </h2>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Nom de l'œuvre *</label>
               <input
@@ -156,7 +169,7 @@ export function ProductGeneralTab({ product, onSaved }: ProductGeneralTabProps) 
           </div>
         </div>
 
-        {/* COLONNE DROITE (Statut, Tags) */}
+        {/* COLONNE DROITE */}
         <div className="col-span-1 space-y-6">
           <div className="p-6 bg-white border border-gray-200 rounded-2xl space-y-4">
             <h2 className="text-sm font-semibold uppercase tracking-widest text-gray-400 mb-4">
@@ -174,7 +187,7 @@ export function ProductGeneralTab({ product, onSaved }: ProductGeneralTabProps) 
                 <option value="ARCHIVED">Archivé</option>
               </select>
             </div>
-            
+
             <label className="flex items-center gap-2 cursor-pointer pt-2">
               <input
                 type="checkbox"
@@ -184,6 +197,36 @@ export function ProductGeneralTab({ product, onSaved }: ProductGeneralTabProps) 
               />
               <span className="text-sm font-medium text-gray-700">Mettre en avant sur l'accueil</span>
             </label>
+          </div>
+
+          <div className="p-6 bg-white border border-gray-200 rounded-2xl space-y-4">
+            <h2 className="text-sm font-semibold uppercase tracking-widest text-gray-400 mb-4">
+              Catégories
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {availableCategories.length === 0 ? (
+                <span className="text-sm text-gray-400">Aucune catégorie disponible</span>
+              ) : (
+                availableCategories.map(cat => {
+                  const isSelected = selectedCategoryIds.includes(cat.id)
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => handleCategoryToggle(cat.id)}
+                      className={cn(
+                        "px-3 py-1.5 text-xs font-medium rounded-full transition-colors border cursor-pointer",
+                        isSelected
+                          ? "bg-gray-900 text-white border-gray-900"
+                          : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"
+                      )}
+                    >
+                      {cat.name}
+                    </button>
+                  )
+                })
+              )}
+            </div>
           </div>
 
           <div className="p-6 bg-white border border-gray-200 rounded-2xl space-y-4">
@@ -202,9 +245,9 @@ export function ProductGeneralTab({ product, onSaved }: ProductGeneralTabProps) 
                       type="button"
                       onClick={() => handleTagToggle(tag.id)}
                       className={cn(
-                        "px-3 py-1.5 text-xs font-medium rounded-full transition-colors border",
-                        isSelected 
-                          ? "bg-gray-900 text-white border-gray-900" 
+                        "px-3 py-1.5 text-xs font-medium rounded-full transition-colors border cursor-pointer",
+                        isSelected
+                          ? "bg-gray-900 text-white border-gray-900"
                           : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"
                       )}
                     >
@@ -218,12 +261,11 @@ export function ProductGeneralTab({ product, onSaved }: ProductGeneralTabProps) 
         </div>
       </div>
 
-      {/* BOUTON SAUVEGARDER (Flottant ou en bas) */}
       <div className="flex justify-end pt-4 border-t border-gray-200">
         <button
           type="submit"
           disabled={isSubmitting}
-          className="flex items-center gap-2 rounded-xl bg-gray-900 px-6 py-3 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors"
+          className="flex items-center gap-2 rounded-xl bg-gray-900 px-6 py-3 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors cursor-pointer"
         >
           {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <CheckIcon size={16} />}
           {product ? 'Mettre à jour le produit' : 'Créer le produit'}

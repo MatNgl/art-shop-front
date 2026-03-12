@@ -10,6 +10,7 @@ import {
   ShoppingCart,
   ScrollText,
   ArrowLeft,
+  Tag,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -43,6 +44,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: 'Produits', href: '/admin/produits', icon: Package },
       { label: 'Catégories', href: '/admin/categories', icon: Grid3X3 },
+      { label: 'Tags', href: '/admin/tags', icon: Tag },
       { label: 'Formats', href: '/admin/formats', icon: Ruler },
       { label: 'Matériaux', href: '/admin/materiaux', icon: Paintbrush },
     ],

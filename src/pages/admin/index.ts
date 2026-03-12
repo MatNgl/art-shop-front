@@ -5,4 +5,5 @@ export * from "./MaterialPage";
 export * from "./FormatsPage";
 export * from "./CategoriesPage";
 export * from "./ProductsPage";
-export * from './ProductEditorPage'
+export * from "./ProductEditorPage";
+export * from "./TagsPage";
